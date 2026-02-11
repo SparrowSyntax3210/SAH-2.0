@@ -51,14 +51,14 @@ tl.to("#hero-h1, #hero-h3, .hero-button", { x: -800 }, "move")
 gsap.from(".page2-h1, .box", {
     opacity: 0,
     y: 100,
-    scale: 0.9,
+    scale: 1,
     stagger: 0.15,
     ease: "power3.out",
     scrollTrigger: {
         trigger: ".hero-img",
         scroller: ".main",
-        start: "top 70%",
-        end: "top 30%",
+        start: "top 80%",
+        end: "top 20%",
         scrub: 2
     }
 });
