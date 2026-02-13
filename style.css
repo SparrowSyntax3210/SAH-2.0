@@ -180,18 +180,30 @@ a:hover::after {
 .container {
     display: flex;
     justify-content: center;
+    align-items: flex-start;
     gap: 50px;
     flex-wrap: wrap;
     margin-top: 2vw;
+    min-height: 300px;
 }
+
 
 .box,
 .box2 {
     width: 400px;
-    height: 270px;
     border-radius: 40px;
     background: #111;
+    overflow: hidden;
+
+    height: 140px;
+    transition: height 0.45s ease;
 }
+
+.box:hover,
+.box2:hover {
+    height: 270px;
+}
+
 
 .box h1,.box2 h1 {
     color: #fff;
@@ -203,8 +215,11 @@ a:hover::after {
     border-radius: 10px;
 }
 
-.box p,.box2 p {
+.box p,
+.box2 p {
     color: #fff;
-    margin: 40px;
+    margin: 20px;
     text-align: center;
+    letter-spacing: 2px;
+    font-size: 17px;
 }
