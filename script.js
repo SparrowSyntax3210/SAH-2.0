@@ -1,79 +1,107 @@
+// Register GSAP plugins
 gsap.registerPlugin(ScrollTrigger);
 
-// Locomotive Scroll
-const locoScroll = new LocomotiveScroll({
-    el: document.querySelector(".main"),
-    smooth: true
+// Initialize Locomotive Scroll + ScrollTrigger
+initSite();
+
+window.addEventListener("load", () => {
+
+    const master = gsap.timeline();
+
+    master
+        // Show loader
+        .set(".loader-container", { autoAlpha: 1 })
+
+        // Fake loading delay
+        .to({}, { duration: 2 })
+
+        // Loader text exit
+        .to(".loader-text-fill", {
+            y: -60,
+            opacity: 0,
+            duration: 0.5,
+            ease: "power2.in"
+        })
+
+        // Slide loader up
+        .to(".loader-container", {
+            yPercent: -100,
+            duration: 0.9,
+            ease: "power4.inOut"
+        }, "-=0.2")
+
+        // Main content reveal
+        .from(".main", {
+            y: 120,
+            opacity: 0,
+            duration: 1,
+            ease: "power4.out"
+        }, "<")
+
+        .set(".loader-container", { display: "none" })
+
+        // Hero elements entrance
+        .from(".nav img, .nav h4, .hero-image, .floating", {
+            opacity: 0,
+            y: 80,
+            duration: 0.8,
+            stagger: 0.12,
+            ease: "power3.out"
+        });
 });
 
-locoScroll.on("scroll", ScrollTrigger.update);
+function initSite() {
 
-ScrollTrigger.scrollerProxy(".main", {
-    scrollTop(value) {
-        return arguments.length
-            ? locoScroll.scrollTo(value, 0, 0)
-            : locoScroll.scroll.instance.scroll.y;
-    },
-    getBoundingClientRect() {
-        return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
-    },
-    pinType: document.querySelector(".main").style.transform ? "transform" : "fixed"
-});
+    const locoScroll = new LocomotiveScroll({
+        el: document.querySelector(".main"),
+        smooth: true
+    });
 
-ScrollTrigger.addEventListener("refresh", () => locoScroll.update());
-ScrollTrigger.refresh();
+    locoScroll.on("scroll", ScrollTrigger.update);
 
-// INTRO ANIMATION
-gsap.from(".nav img, .nav h4, #hero-h1, #hero-h3, .hero-button, .main-image", {
-    opacity: 0,
-    y: 50,
-    duration: 0.8,
-    stagger: 0.15,
-    ease: "power3.out"
-});
+    ScrollTrigger.scrollerProxy(".main", {
+        scrollTop(value) {
+            return arguments.length
+                ? locoScroll.scrollTo(value, 0, 0)
+                : locoScroll.scroll.instance.scroll.y;
+        },
+        getBoundingClientRect() {
+            return {
+                top: 0,
+                left: 0,
+                width: window.innerWidth,
+                height: window.innerHeight
+            };
+        },
+        pinType: document.querySelector(".main").style.transform
+            ? "transform"
+            : "fixed"
+    });
 
-// HERO SCROLL ANIMATION
-const tl = gsap.timeline({
-    scrollTrigger: {
-        trigger: ".page1",
-        scroller: ".main",
-        start: "top top",
-        end: "bottom top",
-        scrub: 2
-    }
-});
+    ScrollTrigger.addEventListener("refresh", () => locoScroll.update());
+    ScrollTrigger.refresh();
 
-tl.to("#hero-h1, #hero-h3, .hero-button", { x: -800 }, "move")
-    .to(".main-image", { x: 800 }, "move")
-    .to(".hero-img", { width: "100%" });
+    // 🔥 HERO SCROLL ANIMATION
+    const tl = gsap.timeline({
+        scrollTrigger: {
+            trigger: ".page1",
+            scroller: ".main",
+            start: "top top",
+            end: "bottom top",
+            scrub: 2
+        }
+    });
 
-// PAGE 2 ANIMATIONS
-gsap.from(".page2-h1, .box , .box h1 , .box p", {
-    opacity: 0,
-    y: 100,
-    scale: 1,
-    stagger: 0.15,
-    ease: "power3.out",
-    scrollTrigger: {
-        trigger: ".page2-container",
-        scroller: ".main",
-        start: "top 60%",
-        end: "top 20%",
-        scrub: 2
-    }
-});
+    // Move floating text up & fade
+    tl.to(".text1, .text2, .text3, .text4", {
+        y: -150,
+        opacity: 0,
+        stagger: 0.1
+    }, "move")
 
-gsap.from(".box2 , .box2 h1, .box2 p", {
-    opacity: 0,
-    y: 100,
-    scale: 0.9,
-    stagger: 0.15,
-    ease: "power3.out",
-    scrollTrigger: {
-        trigger: ".page2-container",
-        scroller: ".main",
-        start: "top 5%",
-        end: "top -20%",
-        scrub: 2
-    }
-});
+        // Move image down & fade
+        .to(".hero-image", {
+            y: 150,
+            opacity: 0
+        }, "move");
+}
