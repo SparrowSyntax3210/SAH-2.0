@@ -373,6 +373,17 @@ body {
     display: flex;
     justify-content: space-between;
   }
+
+  .page2-text-left {
+    font-size: 35px;
+    font-family: "Oswald" , sans-serif;
+    text-transform: capitalize;
+  }
+
+  .page2-text-right {
+    font-size: 26px;
+    width: 450px;
+  }
   
   .horizontal-wrapper {
     position: relative;
@@ -385,7 +396,7 @@ body {
     display: flex;
     gap: 30px;
     width: 60px;
-    padding-top: 80px;
+    padding-top: 50px;
   }
   
   .key-box {

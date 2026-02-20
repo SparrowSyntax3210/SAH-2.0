@@ -1,19 +1,17 @@
-gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
+
+gsap.registerPlugin(ScrollTrigger);
+
+const smoother = ScrollSmoother.create({
+  wrapper: "#smooth-wrapper",
+  content: "#smooth-content",
+  smooth: 1.2,        // scroll smoothness
+  effects: true,
+  normalizeScroll: true
+});
+
 
 window.addEventListener("load", () => {
 
-  // ✅ CREATE SMOOTH SCROLL
-  const smoother = ScrollSmoother.create({
-    wrapper: "#smooth-wrapper",
-    content: "#smooth-content",
-    smooth: 1.2,        // scroll smoothness
-    effects: true,
-    normalizeScroll: true
-  });
-
-  // =============================
-  // LOADER + HERO REVEAL
-  // =============================
   const tl = gsap.timeline();
 
   tl.set(".loader-container", { autoAlpha: 1 })
@@ -38,21 +36,15 @@ window.addEventListener("load", () => {
       ease: "power3.out",
     });
 
-  // =========================
-  // INITIAL STATES
-  // =========================
   gsap.set(".small-title", { opacity: 0, y: 40 });
   gsap.set(".about-text h1", { opacity: 0, y: 60 });
   gsap.set(".description", { opacity: 0, y: 40 });
   gsap.set(".card", { opacity: 0, y: 60 });
 
-  // =========================
-  // HEADINGS ANIMATION
-  // =========================
   const aboutTimeline = gsap.timeline({
     scrollTrigger: {
       trigger: ".about",
-      start: "top 10%",   // starts when section enters view
+      start: "top 10%",   // appears only after deep scroll
       toggleActions: "play reverse play reverse",
     }
   });
@@ -62,9 +54,6 @@ window.addEventListener("load", () => {
     .to(".about-text h1", { opacity: 1, y: 0, duration: 0.8 }, "-=0.2")
     .to(".description", { opacity: 1, y: 0, duration: 0.6 }, "-=0.3");
 
-  // =========================
-  // CARDS ANIMATION
-  // =========================
   gsap.to(".card", {
     opacity: 1,
     y: 0,
@@ -73,14 +62,14 @@ window.addEventListener("load", () => {
     ease: "power3.out",
     scrollTrigger: {
       trigger: ".about",
-      start: "top 30%",
+      start: "top 40%",
       toggleActions: "play reverse play reverse",
     }
   });
 
-    // =============================
-  // HORIZONTAL SCROLL
-  // =============================
+  // refresh after loader
+  ScrollTrigger.refresh();
+
   const container = document.querySelector(".keydivs");
   const section = document.querySelector(".page2");
 
@@ -92,15 +81,25 @@ window.addEventListener("load", () => {
       ease: "none",
       scrollTrigger: {
         trigger: section,
-        start: "top top",
+        start: "top -40%",
         end: () => "+=" + scrollAmount,
-        scrub: 1,
+        scrub: 1.5,   // smoother feel
         pin: true,
         anticipatePin: 1,
-        invalidateOnRefresh: true,
       },
     });
   }
 
-
+  gsap.from(".page2-text-left h1, .page2-text-right p", {
+    opacity: 0,
+    y: 40,
+    duration: 0.8,
+    stagger: 0.2,
+    ease: "power2.out",
+    scrollTrigger: {
+      trigger: ".page2",
+      start: "top 25%",
+      toggleActions: "play none none none",
+    }
+  });
 });
