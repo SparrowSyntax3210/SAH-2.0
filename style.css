@@ -10,6 +10,7 @@
 
 html,
 body {
+  scroll-behavior: smooth;
   height: 100%;
   width: 100%;
 }
@@ -66,8 +67,6 @@ body {
 
 /* NAV */
 .nav {
-  margin-top: 0px;
-  top: 20px;
   text-align: center;
   height: 70px;
   padding: 0 20px;
@@ -75,10 +74,12 @@ body {
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  background: #111;
+  background: transparent;
   border-radius: 0px 0px 40px 40px;
   padding: 14px 30px;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  z-index: 10;
+  position: fixed;
 }
 
 .nav img {
@@ -98,15 +99,15 @@ body {
   color: #111;
 }
 
-a {
+.nav-part2 a {
   text-decoration: none;
   position: relative;
   color: white;
   font-weight: 600;
-  transition: color 0.3s ease;
+  display: inline-block;
 }
 
-a::after {
+.nav-part2 a::after {
   content: "";
   position: absolute;
   bottom: -4px;
@@ -115,13 +116,13 @@ a::after {
   height: 2px;
   background: white;
   transform: scaleX(0);
+  transform-origin: left;
   transition: transform 0.3s ease;
 }
 
-a:hover::after {
+.nav-part2 a:hover::after {
   transform: scaleX(1);
 }
-
 .circle {
   background-color: white;
   border-radius: 50%;
@@ -149,26 +150,11 @@ a:hover::after {
   
   .hero-video video {
     width: 100%;
-    height: 100%;
+    height: 940px;
     object-fit: cover;
     filter: brightness(0.75) contrast(1.05);
   }
-  
-  /* Dark overlay for readability */
-  .hero-video::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      rgba(0,0,0,0.45),
-      rgba(0,0,0,0.55)
-    );
-    z-index: 1;
-  }
-  
-  /* =================================================
-     HERO SECTION LAYOUT (CENTERED)
-  ================================================= */
+
   .hero-section {
     position: absolute;
     inset: 0;
@@ -183,10 +169,7 @@ a:hover::after {
     gap: 14px;
     padding: 0 20px;
   }
-  
-  /* =================================================
-     HERO TEXT
-  ================================================= */
+
   .floating {
     font-family: "Oswald", sans-serif;
     color: #fff;
@@ -194,24 +177,21 @@ a:hover::after {
     margin: 0;
   }
   
-  /* Main heading */
+
   .text1 {
     font-size: clamp(36px, 6vw, 72px);
     font-weight: 800;
     letter-spacing: -1px;
   }
   
-  /* Sub heading */
+
   .text2 {
     font-size: clamp(36px, 6vw, 72px);
     font-weight: 800;
     letter-spacing: -1px;
     opacity: 0.9;
   }
-  
-  /* =================================================
-     BUTTON (GLASS STYLE)
-  ================================================= */
+
   .fill-btn {
     margin-top: 30px;
     border-radius: 30px;
@@ -250,6 +230,125 @@ a:hover::after {
   
   .fill-btn:hover .label {
     color: #000;
+  }
+/* ABOUT SECTION */
+.about {
+  width: 90%;
+  margin: auto;
+  padding: 80px 0;
+}
+
+.small-title {
+  color: gray;
+  margin-bottom: 40px;
+  font-size: 30px;
+}
+
+.about-text {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.about-text h1 {
+  line-height: 60px;
+  font-size: 42px;
+  width: 700px;
+}
+
+.about-text span {
+  color: #4CAF50;
+}
+
+.description {
+  color: #aaa;
+  line-height: 1.6;
+  width: 500px;
+}
+
+.cards {
+  margin-top: 90px;
+  display: flex;
+  gap: 20px;
+}
+
+.card {
+  background: #272727;
+  padding: 30px;
+  width: 100%;
+  height: 290px;
+  border-radius: 10px;
+  transition: 0.4s;
+  cursor: pointer;
+}
+
+.card i{
+
+  font-size:25px;
+  margin-bottom:15px;
+  color:#4CAF50;
+  position: relative;
+  top: 20%;
+  }
+  
+  
+  
+  /* TEXT */
+  
+  .card h2{
+  
+  font-size:28px;
+  margin-bottom:5px;
+  position: relative;
+  top: 20%;
+  }
+  
+  .card p{
+  
+  color:gray;
+  position: relative;
+  top: 26%;
+  
+  }
+  
+  .first:hover{
+  
+  background:linear-gradient(135deg,#1b5e20,#4CAF50);
+  
+  transform:translateY(-60px) scale(1.05);
+  
+  }
+  
+  
+  .first:hover i,
+  .first:hover p,
+  .first:hover h2{
+  
+  color:white;
+  
+  }
+  
+  .first {
+      transform: translateY(-50px);
+  }
+  
+  .up{
+  
+  transform:translateY(-50px);
+  
+  }
+  
+  
+  .down{
+  
+  transform:translateY(50px);
+  
+  }
+  
+  .card:hover{
+  
+  transform:translateY(-40px) scale(1.05);
+  
   }
 /* PAGE 2 */
 
