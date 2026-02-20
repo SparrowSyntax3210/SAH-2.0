@@ -10,14 +10,18 @@
 
 html,
 body {
-  scroll-behavior: smooth;
   height: 100%;
   width: 100%;
-}
-
-body {
   background-color: #0f0d0d;
   color: #fff;
+}
+
+#smooth-wrapper {
+  overflow: hidden;
+}
+
+#smooth-content {
+  min-height: 100vh;
 }
 
 /* ================= LOADER ================= */
