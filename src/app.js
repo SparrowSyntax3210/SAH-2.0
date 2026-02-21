@@ -4,6 +4,10 @@ const app = express();
 
 module.exports = app;
 
-app.get("/login" , (req,res) => {
+app.get("/login", (req, res) => {
     res.render("login.ejs");
+});
+
+app.get("/register", (req, res) => {
+    res.render("register.ejs");
 });
