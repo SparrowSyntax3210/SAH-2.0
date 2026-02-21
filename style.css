@@ -205,14 +205,14 @@ body {
     overflow: hidden;
     font-family: "Oswald", sans-serif;
     position: relative;
-    border: 2px solid rgba(255,255,255,0.4);
+    border: 2px solid rgba(236, 231, 231, 0.4);
     backdrop-filter: blur(6px);
   }
   
   .fill-btn .label {
     position: relative;
     z-index: 2;
-    color: #fff;
+    color: #1d1c1c;
     font-size: 18px;
     letter-spacing: 1px;
     transition: color 0.4s ease;
@@ -221,11 +221,17 @@ body {
   .fill-btn .fill {
     position: absolute;
     inset: 0;
-    background: #fff;
+    background: #181818;
     transform: scaleX(0);
     transform-origin: left;
     z-index: 1;
     transition: transform 0.4s ease;
+  }
+
+  .label a {
+    text-decoration: none;
+    color: white;
+
   }
   
   .fill-btn:hover .fill {
