@@ -44,7 +44,7 @@ window.addEventListener("load", () => {
   const aboutTimeline = gsap.timeline({
     scrollTrigger: {
       trigger: ".about",
-      start: "top 10%",   // appears only after deep scroll
+      start: "top 20%",   // appears only after deep scroll
       toggleActions: "play reverse play reverse",
     }
   });
@@ -62,8 +62,8 @@ window.addEventListener("load", () => {
     ease: "power3.out",
     scrollTrigger: {
       trigger: ".about",
-      start: "top 40%",
-      toggleActions: "play reverse play reverse",
+      start: "top 0%",
+      toggleActions: "play none none none",
     }
   });
 
@@ -88,18 +88,135 @@ window.addEventListener("load", () => {
         anticipatePin: 1,
       },
     });
-  }
 
-  gsap.from(".page2-text-left h1, .page2-text-right p", {
+    gsap.from(".page2-text-left h1, .page2-text-right p", {
+      opacity: 0,
+      y: 40,
+      duration: 0.8,
+      stagger: 0.2,
+      ease: "power2.out",
+      scrollTrigger: {
+        trigger: ".page2",
+        start: "top 10%",
+        toggleActions: "play reverse play reverse",
+      }
+    });
+
+    // Key boxes animation
+    gsap.from(".key-box", {
+      opacity: 0,
+      y: 40,
+      duration: 0.8,
+      stagger: 0.2,
+      ease: "power2.out",
+      scrollTrigger: {
+        trigger: ".page2",
+        start: "top 0%",
+        toggleActions: "play none none reverse",
+      }
+    });
+
+  }
+  const fileInput = document.getElementById("fileInput");
+  const browse = document.querySelector(".browse");
+  const fileList = document.getElementById("fileList");
+  const uploadBtn = document.getElementById("uploadBtn");
+  const successBox = document.getElementById("successBox");
+  const uploadBox = document.getElementById("uploadBox");
+
+  let selectedFiles = [];
+
+  // Open file picker
+  browse.addEventListener("click", () => fileInput.click());
+
+  // Show selected files with progress bars
+  fileInput.addEventListener("change", () => {
+    selectedFiles = [...fileInput.files];
+    fileList.innerHTML = "";
+
+    selectedFiles.forEach((file, index) => {
+      const div = document.createElement("div");
+      div.className = "file-item";
+      div.innerHTML = `
+      ${file.name}
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-${index}"></div>
+      </div>
+    `;
+      fileList.appendChild(div);
+    });
+  });
+
+  // Upload with progress tracking
+  uploadBtn.addEventListener("click", () => {
+    if (!selectedFiles.length) return alert("Select files first");
+
+    let uploadedCount = 0;
+
+    selectedFiles.forEach((file, index) => {
+      const formData = new FormData();
+      formData.append("files", file);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open("POST", "http://localhost:4000/upload");
+
+      // Track upload progress
+      xhr.upload.addEventListener("progress", (e) => {
+        if (e.lengthComputable) {
+          const percent = (e.loaded / e.total) * 100;
+          document.getElementById(`progress-${index}`).style.width = percent + "%";
+        }
+      });
+
+      xhr.onload = () => {
+        uploadedCount++;
+        if (uploadedCount === selectedFiles.length) {
+          uploadBox.style.display = "none";
+          successBox.style.display = "block";
+        }
+      };
+
+      xhr.send(formData);
+    });
+  });
+
+  gsap.from(".upload-box", {
     opacity: 0,
     y: 40,
     duration: 0.8,
     stagger: 0.2,
     ease: "power2.out",
     scrollTrigger: {
-      trigger: ".page2",
-      start: "top 25%",
-      toggleActions: "play none none none",
+      trigger: ".upload-section",
+      start: "top 10%",
+      toggleActions: "play none none reverse",
     }
   });
+
+  gsap.from(".contact-content, .contact-btn", {
+    opacity: 0,
+    y: 40,
+    duration: 0.8,
+    stagger: 0.2,
+    ease: "power2.out",
+    scrollTrigger: {
+      trigger: ".contact",
+      start: "top 20%",
+      toggleActions: "play none none reverse",
+    }
+  });
+
+  gsap.from(".services, .clients", {
+    opacity: 0,
+    y: 40,
+    duration: 0.8,
+    stagger: 0.2,
+    ease: "power2.out",
+    scrollTrigger: {
+      trigger: ".contact",
+      start: "top 5%",
+      toggleActions: "play none none reverse",
+    }
+  });
+
 });

@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LexivaRank | AI Powered Resume Phraser</title>
 
   <!-- Font Awesome -->
-  <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -15,18 +15,18 @@
 <body>
 
   <!-- Loader -->
-  <div class="loader-container">
+  <div class="loader-container" aria-hidden="true">
     <h1 data-title="LexivaRank" class="loader-text-fill">LexivaRank</h1>
   </div>
 
-  <!-- ✅ Smooth Scroll Wrapper -->
+  <!-- Smooth Scroll Wrapper -->
   <div id="smooth-wrapper">
     <div id="smooth-content">
 
       <!-- PAGE 1 -->
       <section class="page1">
         <nav class="nav">
-          <img src="./assets/logo.png" alt="logo" />
+          <img src="./assets/logo.png" alt="LexivaRank logo" />
           <div class="nav-part2">
             <h4><a href="#">Home</a></h4>
             <h4><a href="#">Work</a></h4>
@@ -36,7 +36,7 @@
         </nav>
 
         <div class="hero-video">
-          <video src="./assets/background.mp4" autoplay loop muted></video>
+          <video src="./assets/background.mp4" autoplay loop muted playsinline></video>
         </div>
 
         <div class="hero-section">
@@ -45,14 +45,16 @@
 
           <button class="fill-btn">
             <span class="fill"></span>
-            <span class="label"><a href="http://localhost:4000/login">Get Started</a></span>
+            <span class="label">
+              <a href="http://localhost:4000/login">Get Started</a>
+            </span>
           </button>
         </div>
       </section>
 
       <!-- ABOUT SECTION -->
-      <section class="about">
-        <p class="small-title" src="#about">— About Us —</p>
+      <section class="about" id="#about">
+        <p class="small-title">— About Us —</p>
 
         <div class="about-text">
           <h1>
@@ -94,12 +96,18 @@
         </div>
       </section>
 
-      <!-- PAGE 2 (HORIZONTAL SCROLL) -->
+      <!-- PAGE 2 -->
       <section class="page2">
         <div class="page2-container">
-          <div class="page2-text-left"><h1>KEY FEATURES</h1></div>
+          <div class="page2-text-left">
+            <h1>KEY FEATURES</h1>
+          </div>
           <div class="page2-text-right">
-            <p>Lorem ipsum dolor sit amet consectetur adipisicing Lorem ipsum dolor sit amet, consectetur adipisicing elit. Distinctio quos, magnam dicta nesciunt reprehenderit nobis fuga? Asperiore</elit></p>
+            <p>
+              Lorem ipsum dolor sit amet consectetur adipisicing elit.
+              Distinctio quos, magnam dicta nesciunt reprehenderit nobis fuga?
+              Asperiores provident tempora illum.
+            </p>
           </div>
         </div>
 
@@ -115,14 +123,113 @@
         </div>
       </section>
 
-    </div>
-  </div>
+      <!-- ================= UPLOAD SECTION ================= -->
+      <section class="upload-section">
 
-  <!-- GSAP -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollSmoother.min.js"></script>
+        <div class="upload-box" id="uploadBox">
 
-  <script src="script.js"></script>
+          <!-- LEFT: IMAGE -->
+          <div class="upload-left">
+            <img src="https://cdn-icons-png.flaticon.com/512/724/724933.png" alt="Upload" class="upload-illustration">
+            <p>Drag & Drop your files<br>or <span class="browse">Browse</span></p>
+            <input type="file" id="fileInput" hidden multiple>
+          </div>
+
+          <!-- RIGHT: FILE LIST -->
+          <div class="upload-right">
+            <h2>Upload Your Resume</h2>
+            <div id="fileList" class="file-list"></div>
+            <button id="uploadBtn" class="upload-btn">Upload Files</button>
+          </div>
+
+        </div>
+
+        <!-- SUCCESS UI -->
+        <div class="upload-success" id="successBox">
+          <img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" class="success-img" alt="Success">
+          <h2>Upload Successful 🎉</h2>
+          <p>Your files have been uploaded and processed.</p>
+          <button onclick="location.reload()">Upload More</button>
+        </div>
+
+      </section>
+
+      <!-- Contact Section -->
+      <header class="contact">
+        <div class="contact-content">
+          <h1>Speak with our 👨‍💻👩‍💻👨‍💼 experts about your project requirements.</h1>
+          <p>Let’s talk about how we can craft a user experience that not only looks great but drives real growth for
+            your
+            product.</p>
+          <a href="#" class="contact-btn">BOOK A CALL</a>
+        </div>
+      </header>
+
+      <!-- Services Section -->
+      <section class="services">
+        <div class="service">
+          <h2>Design</h2>
+          <p>Your story, crafted through user-driven visuals.</p>
+        </div>
+        <div class="service">
+          <h2>Development</h2>
+          <p>Crafting appealing, functional digital experiences.</p>
+        </div>
+      </section>
+
+      <!-- Clients Section -->
+      <section class="clients">
+        <h3>We’ve helped over 200+ companies including</h3>
+        <div class="logos">
+          <span>WhatsApp</span>
+          <span>Amazon</span>
+          <span>Upwork</span>
+          <span>Dropbox</span>
+          <span>Shopify</span>
+          <span>YouTube</span>
+        </div>
+      </section>
+
+      <!-- Footer -->
+      <footer>
+        <div class="footer-top">
+          <h2>LexivaRank</h2>
+          <p>The Most Powerful AI Resume Phraser</p>
+          <form class="newsletter">
+            <input type="email" placeholder="Your email address">
+            <button type="submit">Subscribe</button>
+          </form>
+        </div>
+        <div class="footer-links">
+          <ul>
+            <li><a href="#">Our services</a></li>
+            <li><a href="#">Projects</a></li>
+            <li><a href="#">Our Process</a></li>
+            <li><a href="#">Referral Program</a></li>
+          </ul>
+          <ul>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Resources</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        <div class="social">
+          <a href="#">🌐</a>
+          <a href="#">📘</a>
+          <a href="#">🐦</a>
+          <a href="#">📸</a>
+        </div>
+      </footer>
+
+
+
+      <!-- GSAP -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollSmoother.min.js"></script>
+
+      <script src="script.js"></script>
 </body>
+
 </html>
