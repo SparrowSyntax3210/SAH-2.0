@@ -1,6 +1,7 @@
 const express = require('express');
 const app = express();
 const multer = require("multer");
+const session = require("express-session");
 const path = require("path");
 
 const upload = multer({ dest: "uploads/" });

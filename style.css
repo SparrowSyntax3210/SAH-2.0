@@ -128,6 +128,49 @@ body {
   transform: scaleX(1);
 }
 
+/* Profile container */
+#profileCircle {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Avatar */
+.avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  cursor: pointer;
+  border: 2px solid #000;
+}
+
+/* Dropdown */
+.dropdown {
+  position: absolute;
+  top: 50px;
+  right: 0;
+  background: #fff;
+  border: 2px solid #000;
+  border-radius: 8px;
+  display: none;
+  z-index: 1000;
+}
+
+.dropdown a {
+  display: block;
+  padding: 8px 12px;
+  text-decoration: none;
+  color: #000;
+}
+
+.dropdown a:hover {
+  background: #eee;
+}
+
+.hidden {
+  display: none;
+}
 /* HERO SECTION */
 .page1 {
   position: relative;

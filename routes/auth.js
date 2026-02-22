@@ -38,23 +38,26 @@ router.get("/login", (req, res) => {
 
 router.post("/login", async (req, res) => {
     try {
-        const { email, password } = req.body;
-
-        // find user
-        const user = await User.findOne({ email, password });
-
-        if (!user) {
-            return res.send("Invalid email or password ❌");
-        }
-
-        // ✅ login success → redirect to home
-        res.redirect("./home");
-
+      const { email, password } = req.body;
+  
+      const user = await User.findOne({ email, password });
+  
+      if (!user) {
+        return res.send("Invalid email or password ❌");
+      }
+  
+      // redirect with login flag
+      res.redirect("/?login=success");
+  
     } catch (err) {
-        console.error(err);
-        res.send("Login error");
+      console.error(err);
+      res.send("Login error");
     }
-});
+  });
+
+router.get("/logout", (req, res) => {
+    res.redirect("/index.html");
+  });
 
 router.get("/home", (req, res) => {
     res.redirect("/index.html");
