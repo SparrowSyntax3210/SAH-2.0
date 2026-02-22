@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 async function connectDB() {
-    
-    await mongoose.connect("mongodb+srv://Backend:Alpha_Venom@backend1.yctnny1.mongodb.net/Harsh")
+
+    await mongoose.connect("mongodb+srv://Harsh_Goel:Codeitup3210@lexivarank.xb41cau.mongodb.net/?appName=LexivaRank")
 
     console.log("connected successfully ")
 }
