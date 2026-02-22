@@ -149,56 +149,50 @@ setTimeout(() => {
   // Open file picker
   browse.addEventListener("click", () => fileInput.click());
 
-  // Show selected files with progress bars
-  fileInput.addEventListener("change", () => {
-    selectedFiles = [...fileInput.files];
-    fileList.innerHTML = "";
+fileInput.addEventListener("change", () => {
+  fileList.innerHTML = "";
 
-    selectedFiles.forEach((file, index) => {
-      const div = document.createElement("div");
-      div.className = "file-item";
-      div.innerHTML = `
-      ${file.name}
+  Array.from(fileInput.files).forEach(file => {
+    // Create UI
+    const fileItem = document.createElement("div");
+    fileItem.className = "file-item";
+
+    fileItem.innerHTML = `
+      <div>${file.name}</div>
       <div class="progress-bar">
-        <div class="progress-fill" id="progress-${index}"></div>
+        <div class="progress-fill"></div>
       </div>
     `;
-      fileList.appendChild(div);
+
+    fileList.appendChild(fileItem);
+
+    const progressFill = fileItem.querySelector(".progress-fill");
+
+    // Prepare upload
+    const formData = new FormData();
+    formData.append("files", file);
+
+    const xhr = new XMLHttpRequest();
+
+    // ✅ Track upload progress
+    xhr.upload.addEventListener("progress", (e) => {
+      if (e.lengthComputable) {
+        const percent = (e.loaded / e.total) * 100;
+        progressFill.style.width = percent + "%";
+      }
     });
+
+    // When upload completes
+    xhr.onload = () => {
+      if (xhr.status === 200) {
+        progressFill.style.width = "100%";
+      }
+    };
+
+    xhr.open("POST", "/upload"); // your Express route
+    xhr.send(formData);
   });
-
-  // Upload with progress tracking
-  uploadBtn.addEventListener("click", () => {
-    if (!selectedFiles.length) return alert("Select files first");
-
-    let uploadedCount = 0;
-
-    selectedFiles.forEach((file, index) => {
-      const formData = new FormData();
-      formData.append("files", file);
-
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", "http://localhost:4000/upload");
-
-      // Track upload progress
-      xhr.upload.addEventListener("progress", (e) => {
-        if (e.lengthComputable) {
-          const percent = (e.loaded / e.total) * 100;
-          document.getElementById(`progress-${index}`).style.width = percent + "%";
-        }
-      });
-
-      xhr.onload = () => {
-        uploadedCount++;
-        if (uploadedCount === selectedFiles.length) {
-          uploadBox.style.display = "none";
-          successBox.style.display = "block";
-        }
-      };
-
-      xhr.send(formData);
-    });
-  });
+});
 
   gsap.from(".upload-box", {
     opacity: 0,
