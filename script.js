@@ -1,21 +1,15 @@
+/* ================= GSAP SETUP ================= */
+gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
-gsap.registerPlugin(ScrollTrigger);
+/* ================= LOADER ================= */
+document.addEventListener("DOMContentLoaded", () => {
 
-const smoother = ScrollSmoother.create({
-  wrapper: "#smooth-wrapper",
-  content: "#smooth-content",
-  smooth: 1.2,        // scroll smoothness
-  effects: true,
-  normalizeScroll: true
-});
-
-
-window.addEventListener("load", () => {
-
-  const tl = gsap.timeline();
+  const tl = gsap.timeline({
+    onComplete: initSmoothScroll // start smoother AFTER loader
+  });
 
   tl.set(".loader-container", { autoAlpha: 1 })
-    .to({}, { duration: 1 })
+    .to({}, { duration: 0.8 })
     .to(".loader-text-fill", {
       y: -60,
       opacity: 0,
@@ -36,26 +30,25 @@ window.addEventListener("load", () => {
       ease: "power3.out",
     });
 
-    const avatar = document.getElementById("avatar");
-const dropdown = document.getElementById("dropdown");
-
-avatar.addEventListener("click", () => {
-  dropdown.classList.toggle("active");
 });
 
-document.addEventListener("click", (e) => {
-  if (!avatar.contains(e.target) && !dropdown.contains(e.target)) {
-    dropdown.classList.remove("active");
-  }
-});
+/* ================= SCROLL SMOOTHER ================= */
+function initSmoothScroll() {
+  ScrollSmoother.create({
+    wrapper: "#smooth-wrapper",
+    content: "#smooth-content",
+    smooth: 1.2,
+    effects: true,
+    normalizeScroll: true
+  });
 
-const alertBox = document.querySelector(".alert-box");
+  initAnimations(); // start scroll animations
+}
 
-setTimeout(() => {
-  alertBox.classList.remove("show");
-}, 3000); // match animation time
-}),
+/* ================= SCROLL ANIMATIONS ================= */
+function initAnimations() {
 
+  /* ABOUT SECTION */
   gsap.set(".small-title", { opacity: 0, y: 40 });
   gsap.set(".about-text h1", { opacity: 0, y: 60 });
   gsap.set(".description", { opacity: 0, y: 40 });
@@ -64,7 +57,7 @@ setTimeout(() => {
   const aboutTimeline = gsap.timeline({
     scrollTrigger: {
       trigger: ".about",
-      start: "top 20%",   // appears only after deep scroll
+      start: "top 70%",
       toggleActions: "play reverse play reverse",
     }
   });
@@ -82,14 +75,11 @@ setTimeout(() => {
     ease: "power3.out",
     scrollTrigger: {
       trigger: ".about",
-      start: "top 0%",
-      toggleActions: "play none none none",
+      start: "top 60%",
     }
   });
 
-  // refresh after loader
-  ScrollTrigger.refresh();
-
+  /* PAGE 2 HORIZONTAL SCROLL */
   const container = document.querySelector(".keydivs");
   const section = document.querySelector(".page2");
 
@@ -101,9 +91,9 @@ setTimeout(() => {
       ease: "none",
       scrollTrigger: {
         trigger: section,
-        start: "top -40%",
+        start: "top top",
         end: () => "+=" + scrollAmount,
-        scrub: 1.5,   // smoother feel
+        scrub: 1,
         pin: true,
         anticipatePin: 1,
       },
@@ -117,12 +107,10 @@ setTimeout(() => {
       ease: "power2.out",
       scrollTrigger: {
         trigger: ".page2",
-        start: "top 10%",
-        toggleActions: "play reverse play reverse",
+        start: "top 70%",
       }
     });
 
-    // Key boxes animation
     gsap.from(".key-box", {
       opacity: 0,
       y: 40,
@@ -131,111 +119,147 @@ setTimeout(() => {
       ease: "power2.out",
       scrollTrigger: {
         trigger: ".page2",
-        start: "top 0%",
-        toggleActions: "play none none reverse",
+        start: "top 60%",
       }
     });
-
   }
-  const fileInput = document.getElementById("fileInput");
-  const browse = document.querySelector(".browse");
-  const fileList = document.getElementById("fileList");
-  const uploadBtn = document.getElementById("uploadBtn");
-  const successBox = document.getElementById("successBox");
-  const uploadBox = document.getElementById("uploadBox");
 
-  let selectedFiles = [];
-
-  // Open file picker
-  browse.addEventListener("click", () => fileInput.click());
-
-  // Show selected files with progress bars
-  fileInput.addEventListener("change", () => {
-    selectedFiles = [...fileInput.files];
-    fileList.innerHTML = "";
-
-    selectedFiles.forEach((file, index) => {
-      const div = document.createElement("div");
-      div.className = "file-item";
-      div.innerHTML = `
-      ${file.name}
-      <div class="progress-bar">
-        <div class="progress-fill" id="progress-${index}"></div>
-      </div>
-    `;
-      fileList.appendChild(div);
-    });
-  });
-
-  // Upload with progress tracking
-  uploadBtn.addEventListener("click", () => {
-    if (!selectedFiles.length) return alert("Select files first");
-
-    let uploadedCount = 0;
-
-    selectedFiles.forEach((file, index) => {
-      const formData = new FormData();
-      formData.append("files", file);
-
-      const xhr = new XMLHttpRequest();
-      xhr.open("POST", "http://localhost:4000/upload");
-
-      // Track upload progress
-      xhr.upload.addEventListener("progress", (e) => {
-        if (e.lengthComputable) {
-          const percent = (e.loaded / e.total) * 100;
-          document.getElementById(`progress-${index}`).style.width = percent + "%";
-        }
-      });
-
-      xhr.onload = () => {
-        uploadedCount++;
-        if (uploadedCount === selectedFiles.length) {
-          uploadBox.style.display = "none";
-          successBox.style.display = "block";
-        }
-      };
-
-      xhr.send(formData);
-    });
-  });
-
+  /* UPLOAD SECTION */
   gsap.from(".upload-box", {
     opacity: 0,
     y: 40,
     duration: 0.8,
-    stagger: 0.2,
-    ease: "power2.out",
     scrollTrigger: {
       trigger: ".upload-section",
-      start: "top 10%",
-      toggleActions: "play none none reverse",
+      start: "top 70%",
     }
   });
 
+  /* CONTACT */
   gsap.from(".contact-content, .contact-btn", {
     opacity: 0,
     y: 40,
     duration: 0.8,
     stagger: 0.2,
-    ease: "power2.out",
     scrollTrigger: {
       trigger: ".contact",
-      start: "top 20%",
-      toggleActions: "play none none reverse",
+      start: "top 70%",
     }
   });
 
+  /* SERVICES & CLIENTS */
   gsap.from(".services, .clients", {
     opacity: 0,
     y: 40,
     duration: 0.8,
-    stagger: 0.2,
-    ease: "power2.out",
     scrollTrigger: {
-      trigger: ".contact",
-      start: "top 5%",
-      toggleActions: "play none none reverse",
+      trigger: ".services",
+      start: "top 80%",
     }
   });
 
+  ScrollTrigger.refresh();
+}
+
+/* ================= PROFILE DROPDOWN ================= */
+const avatar = document.querySelector(".avatar");
+const dropdown = document.querySelector(".dropdown");
+
+if (avatar) {
+  avatar.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.style.display =
+      dropdown.style.display === "block" ? "none" : "block";
+  });
+
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".profile")) {
+      dropdown.style.display = "none";
+    }
+  });
+}
+
+/* ================= LOGIN STATE ================= */
+document.addEventListener("DOMContentLoaded", () => {
+  const profile = document.getElementById("profileCircle");
+  const btn = document.querySelector(".fill-btn");
+
+  const params = new URLSearchParams(window.location.search);
+
+  if (params.get("login") === "success") {
+    localStorage.setItem("isLoggedIn", "true");
+    window.history.replaceState({}, document.title, "/");
+  }
+
+  const isLoggedIn = localStorage.getItem("isLoggedIn");
+
+  if (profile && btn) {
+    if (isLoggedIn === "true") {
+      profile.style.display = "flex";
+      btn.style.display = "none";
+    } else {
+      profile.style.display = "none";
+      btn.style.display = "inline-block";
+    }
+  }
+});
+
+/* ================= LOGOUT ================= */
+
+// logout button click
+document.getElementById("logoutBtn").addEventListener("click", () => {
+  fetch("/logout")
+    .then(() => {
+      window.location.href = "index.html";
+    })
+    .catch(err => console.log("Logout error:", err));
+});
+/* ================= FILE UPLOAD ================= */
+const fileInput = document.getElementById("fileInput");
+const browse = document.querySelector(".browse");
+const fileList = document.getElementById("fileList");
+
+if (browse && fileInput) {
+  browse.addEventListener("click", () => fileInput.click());
+
+  fileInput.addEventListener("change", () => {
+    fileList.innerHTML = "";
+
+    Array.from(fileInput.files).forEach(file => {
+      const fileItem = document.createElement("div");
+      fileItem.className = "file-item";
+
+      fileItem.innerHTML = `
+        <div style="color:black;">${file.name}</div>
+        <div class="progress-bar">
+          <div class="progress-fill"></div>
+        </div>
+      `;
+
+      fileList.appendChild(fileItem);
+
+      const progressFill = fileItem.querySelector(".progress-fill");
+
+      const formData = new FormData();
+      formData.append("files", file);
+
+      const xhr = new XMLHttpRequest();
+
+      xhr.upload.addEventListener("progress", (e) => {
+        if (e.lengthComputable) {
+          const percent = (e.loaded / e.total) * 100;
+          progressFill.style.width = percent + "%";
+        }
+      });
+
+      xhr.onload = () => {
+        if (xhr.status === 200) {
+          progressFill.style.width = "100%";
+        }
+      };
+
+      xhr.open("POST", "/upload");
+      xhr.send(formData);
+    });
+  });
+}

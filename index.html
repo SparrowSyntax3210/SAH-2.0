@@ -27,39 +27,29 @@
       <section class="page1">
         <nav class="nav">
           <img src="./assets/logo.png" alt="LexivaRank logo" />
-      
+
           <div class="nav-part2">
             <h4><a href="#">Home</a></h4>
             <h4><a href="#">Work</a></h4>
             <h4><a href="#about">About</a></h4>
             <h4><a href="#">Contact</a></h4>
-      
-            <!-- Avatar -->
-            <h4 id="avatar" style="display: none;"></h4>
-          </div>
-      
-          <!-- Dropdown -->
-          <div id="dropdown" class="dropdown">
-            <h4><a href="#">My Account</a></h4>
-            <h4><a href="#">Log Out</a></h4>
-          </div>
+            <div id="profileCircle" class="profile hidden">
+              <img src="./assets/default-avatar.png" class="avatar">
+              <div class="dropdown">
+                <a id="logoutBtn">Logout</a>
+              </div>
+            </div>
         </nav>
 
         <div class="hero-video">
           <video src="./assets/background.mp4" autoplay loop muted playsinline></video>
         </div>
 
-        <div class="alert-box show">
-         <div class="alert success">
-          <i class="fa-solid fa-circle-check"></i>
-          <span>Registeration Successful</span>
-         </div> 
-        </div>
         <div class="hero-section">
           <p class="floating text1">The Most Powerful</p>
           <p class="floating text2">AI Resume Phraser</p>
 
-          <button class="fill-btn">
+          <button id="getStartedBtn" class="fill-btn">
             <span class="fill"></span>
             <span class="label">
               <a href="http://localhost:4000/login">Get Started</a>
