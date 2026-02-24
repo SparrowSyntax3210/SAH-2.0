@@ -85,6 +85,8 @@ app.post("/upload", upload.array("files", 10), (req, res) => {
     res.json({ success: true, files: req.files });
 });
 
+
+
 // ✅ use router
 app.use("/", authRoutes);
 

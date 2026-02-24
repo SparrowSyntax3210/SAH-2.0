@@ -206,18 +206,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /* ================= LOGOUT ================= */
 
-// logout button click
-document.getElementById("logoutBtn").addEventListener("click", () => {
-  fetch("/logout")
-    .then(() => {
-      window.location.href = "index.html";
-    })
-    .catch(err => console.log("Logout error:", err));
-});
-function logoutUser() {
+logoutBtn.addEventListener("click", () => {
+  if (avatar) avatar.style.display = "none";
+  if (getStartedBtn) getStartedBtn.style.display = "inline-block";
   localStorage.removeItem("isLoggedIn");
-  window.location.href = "/login";
-}
+  location.reload();
+});
 
 /* ================= FILE UPLOAD ================= */
 const fileInput = document.getElementById("fileInput");

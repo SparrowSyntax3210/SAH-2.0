@@ -54,19 +54,19 @@ router.post("/login", async (req, res) => {
 });
 
 // ================= LOGOUT =================
-router.get("/logout", (req, res) => {
-    if (req.session) {
-        req.session.destroy(err => {
-            if (err) {
-                console.log(err);
-                return res.send("Error logging out");
-            }
-            return res.redirect("/login?logout=success");
-        });
-    } else {
-        res.redirect("/login");
-    }
-});
+// router.get("/logout", (req, res) => {
+//     if (req.session) {
+//         req.session.destroy(err => {
+//             if (err) {
+//                 console.log(err);
+//                 return res.send("Error logging out");
+//             }
+//             return res.redirect("/login?logout=success");
+//         });
+//     } else {
+//         res.redirect("/login");
+//     }
+// });
 
 // ================= EXTRA ROUTES =================
 router.get("/home", (req, res) => {
