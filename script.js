@@ -1,12 +1,12 @@
 /* ================= GSAP SETUP ================= */
 gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 
+let smoother;
+let mm;
+
 /* ================= LOADER ================= */
 document.addEventListener("DOMContentLoaded", () => {
-
-  const tl = gsap.timeline({
-    onComplete: initSmoothScroll // start smoother AFTER loader
-  });
+  const tl = gsap.timeline({ onComplete: initSmoothScroll });
 
   tl.set(".loader-container", { autoAlpha: 1 })
     .to({}, { duration: 0.8 })
@@ -29,113 +29,147 @@ document.addEventListener("DOMContentLoaded", () => {
       stagger: 0.12,
       ease: "power3.out",
     });
-
 });
 
-/* ================= SCROLL SMOOTHER ================= */
+/* ================= SMOOTH SCROLL ================= */
 function initSmoothScroll() {
-  ScrollSmoother.create({
-    wrapper: "#smooth-wrapper",
-    content: "#smooth-content",
-    smooth: 1.2,
-    effects: true,
-    normalizeScroll: true
-  });
 
-  initAnimations(); // start scroll animations
+  if (smoother) smoother.kill();
+
+  // Disable smoother on small screens
+  if (window.innerWidth > 768) {
+    smoother = ScrollSmoother.create({
+      wrapper: "#smooth-wrapper",
+      content: "#smooth-content",
+      smooth: 1.1,
+      effects: true,
+      normalizeScroll: true
+    });
+  }
+
+  initAnimations();
 }
 
-/* ================= SCROLL ANIMATIONS ================= */
+/* ================= ANIMATIONS ================= */
 function initAnimations() {
 
-  /* ABOUT SECTION */
-  gsap.set(".small-title", { opacity: 0, y: 40 });
-  gsap.set(".about-text h1", { opacity: 0, y: 60 });
-  gsap.set(".description", { opacity: 0, y: 40 });
-  gsap.set(".card", { opacity: 0, y: 60 });
+  // Kill old triggers before rebuilding
+  ScrollTrigger.getAll().forEach(t => t.kill());
 
-  const aboutTimeline = gsap.timeline({
-    scrollTrigger: {
-      trigger: ".about",
-      start: "top 70%",
-      toggleActions: "play reverse play reverse",
+  if (mm) mm.kill();
+  mm = gsap.matchMedia();
+
+  /* ===== COMMON ANIMATIONS ===== */
+
+  gsap.utils.toArray(".card").forEach(card => {
+    gsap.from(card, {
+      opacity: 0,
+      y: 60,
+      duration: 0.6,
+      scrollTrigger: {
+        trigger: card,
+        start: "top 0%",
+        invalidateOnRefresh: true
+      }
+    });
+  });
+  const uploadBtn = document.getElementById("uploadBtn");
+  const submitBtn = document.getElementById("submitBtn");
+  const fileInput = document.getElementById("fileInput");
+  const fileList = document.getElementById("fileList");
+  const browseText = document.querySelector(".browse");
+
+  let selectedFiles = [];
+
+  // 🔒 Force hide submit button on load (overrides CSS issues)
+  submitBtn.style.display = "none";
+
+  // Open file picker
+  uploadBtn.addEventListener("click", () => fileInput.click());
+  if (browseText) browseText.addEventListener("click", () => fileInput.click());
+
+  fileInput.addEventListener("change", () => {
+    const files = Array.from(fileInput.files);
+    if (files.length === 0) return;
+
+    files.forEach(file => {
+      selectedFiles.push(file);
+
+      const item = document.createElement("div");
+      item.className = "file-item";
+      item.textContent = file.name;
+      fileList.appendChild(item);
+    });
+
+    // Change button text after first selection
+    uploadBtn.textContent = "Upload More";
+
+    // ✅ Show Upload button ONLY when at least 1 file selected
+    if (selectedFiles.length > 0) {
+      submitBtn.style.display = "inline-block";
     }
   });
+  /* ===== DESKTOP ONLY ===== */
+  mm.add("(min-width: 1025px)", () => {
 
-  aboutTimeline
-    .to(".small-title", { opacity: 1, y: 0, duration: 0.6 })
-    .to(".about-text h1", { opacity: 1, y: 0, duration: 0.8 }, "-=0.2")
-    .to(".description", { opacity: 1, y: 0, duration: 0.6 }, "-=0.3");
+    const container = document.querySelector(".keydivs");
+    const section = document.querySelector(".page2");
 
-  gsap.to(".card", {
-    opacity: 1,
-    y: 0,
-    duration: 0.8,
-    stagger: 0.2,
-    ease: "power3.out",
-    scrollTrigger: {
-      trigger: ".about",
-      start: "top 60%",
-    }
-  });
+    if (!container || !section) return;
 
-  /* PAGE 2 HORIZONTAL SCROLL */
-  const container = document.querySelector(".keydivs");
-  const section = document.querySelector(".page2");
-
-  if (container && section) {
-    const scrollAmount = container.scrollWidth - window.innerWidth;
+    const getScrollAmount = () =>
+      container.scrollWidth - document.documentElement.clientWidth;
 
     gsap.to(container, {
-      x: -scrollAmount,
+      x: () => -getScrollAmount(),
       ease: "none",
       scrollTrigger: {
         trigger: section,
         start: "top top",
-        end: () => "+=" + scrollAmount,
+        end: () => "+=" + getScrollAmount(),
         scrub: 1,
         pin: true,
         anticipatePin: 1,
-      },
-    });
-
-    gsap.from(".page2-text-left h1, .page2-text-right p", {
-      opacity: 0,
-      y: 40,
-      duration: 0.8,
-      stagger: 0.2,
-      ease: "power2.out",
-      scrollTrigger: {
-        trigger: ".page2",
-        start: "top 70%",
+        invalidateOnRefresh: true,
       }
     });
-
-    gsap.from(".key-box", {
-      opacity: 0,
-      y: 40,
-      duration: 0.8,
-      stagger: 0.2,
-      ease: "power2.out",
-      scrollTrigger: {
-        trigger: ".page2",
-        start: "top 60%",
-      }
-    });
-  }
-
-  /* UPLOAD SECTION */
-  gsap.from(".upload-box", {
-    opacity: 0,
-    y: 40,
-    duration: 0.8,
-    scrollTrigger: {
-      trigger: ".upload-section",
-      start: "top 70%",
-    }
   });
 
-  /* CONTACT */
+  /* ===== TABLET ===== */
+  mm.add("(min-width: 768px) and (max-width: 1024px)", () => {
+    gsap.from(".key-box", {
+      opacity: 0,
+      y: 30,
+      duration: 0.5,
+      stagger: 0.1,
+      scrollTrigger: {
+        trigger: ".page2",
+        start: "top 80%",
+        invalidateOnRefresh: true
+      }
+    });
+  });
+
+  /* ===== MOBILE ===== */
+  mm.add("(max-width: 767px)", () => {
+
+    // Remove transforms from horizontal scroll
+    gsap.set(".keydivs", { clearProps: "all" });
+
+    gsap.from(".upload-box", {
+      opacity: 0,
+      y: 20,
+      duration: 0.5,
+      scrollTrigger: {
+        trigger: ".upload-section",
+        start: "top 90%",
+        invalidateOnRefresh: true
+      }
+    });
+  });
+
+  /* ===== GLOBAL ANIMATIONS ===== */
+
   gsap.from(".contact-content, .contact-btn", {
     opacity: 0,
     y: 40,
@@ -144,10 +178,10 @@ function initAnimations() {
     scrollTrigger: {
       trigger: ".contact",
       start: "top 70%",
+      invalidateOnRefresh: true
     }
   });
 
-  /* SERVICES & CLIENTS */
   gsap.from(".services, .clients", {
     opacity: 0,
     y: 40,
@@ -155,110 +189,28 @@ function initAnimations() {
     scrollTrigger: {
       trigger: ".services",
       start: "top 80%",
+      invalidateOnRefresh: true
     }
   });
 
   ScrollTrigger.refresh();
 }
 
-/* ================= PROFILE DROPDOWN ================= */
-const avatar = document.querySelector(".avatar");
-const dropdown = document.querySelector(".dropdown");
-
-if (avatar) {
-  avatar.addEventListener("click", (e) => {
-    e.stopPropagation();
-    dropdown.style.display =
-      dropdown.style.display === "block" ? "none" : "block";
-  });
-
-  document.addEventListener("click", (e) => {
-    if (!e.target.closest(".profile")) {
-      dropdown.style.display = "none";
-    }
-  });
-}
-
-/* ================= LOGIN STATE ================= */
-document.addEventListener("DOMContentLoaded", () => {
-  const profile = document.getElementById("profileCircle");
-  const btn = document.querySelector(".fill-btn");
-
-  const params = new URLSearchParams(window.location.search);
-
-  if (params.get("login") === "success") {
-    localStorage.setItem("isLoggedIn", "true");
-    window.history.replaceState({}, document.title, "/");
-  }
-
-  const isLoggedIn = localStorage.getItem("isLoggedIn");
-
-  if (profile && btn) {
-    if (isLoggedIn === "true") {
-      profile.style.display = "flex";
-      btn.style.display = "none";
-    } else {
-      profile.style.display = "none";
-      btn.style.display = "inline-block";
-    }
-  }
+/* ================= REBUILD ON RESIZE ================= */
+let resizeTimer;
+window.addEventListener("resize", () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    initSmoothScroll();
+  }, 300);
 });
 
-/* ================= LOGOUT ================= */
+/* ================= MOBILE MENU ================= */
+const toggle = document.getElementById("menuToggle");
+const navLinks = document.getElementById("navLinks");
 
-logoutBtn.addEventListener("click", () => {
-  if (avatar) avatar.style.display = "none";
-  if (getStartedBtn) getStartedBtn.style.display = "inline-block";
-  localStorage.removeItem("isLoggedIn");
-  location.reload();
-});
-
-/* ================= FILE UPLOAD ================= */
-const fileInput = document.getElementById("fileInput");
-const browse = document.querySelector(".browse");
-const fileList = document.getElementById("fileList");
-
-if (browse && fileInput) {
-  browse.addEventListener("click", () => fileInput.click());
-
-  fileInput.addEventListener("change", () => {
-    fileList.innerHTML = "";
-
-    Array.from(fileInput.files).forEach(file => {
-      const fileItem = document.createElement("div");
-      fileItem.className = "file-item";
-
-      fileItem.innerHTML = `
-        <div style="color:black;">${file.name}</div>
-        <div class="progress-bar">
-          <div class="progress-fill"></div>
-        </div>
-      `;
-
-      fileList.appendChild(fileItem);
-
-      const progressFill = fileItem.querySelector(".progress-fill");
-
-      const formData = new FormData();
-      formData.append("files", file);
-
-      const xhr = new XMLHttpRequest();
-
-      xhr.upload.addEventListener("progress", (e) => {
-        if (e.lengthComputable) {
-          const percent = (e.loaded / e.total) * 100;
-          progressFill.style.width = percent + "%";
-        }
-      });
-
-      xhr.onload = () => {
-        if (xhr.status === 200) {
-          progressFill.style.width = "100%";
-        }
-      };
-
-      xhr.open("POST", "/upload");
-      xhr.send(formData);
-    });
+if (toggle && navLinks) {
+  toggle.addEventListener("click", () => {
+    navLinks.classList.toggle("show");
   });
 }

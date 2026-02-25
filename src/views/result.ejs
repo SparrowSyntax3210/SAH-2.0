@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Resume Rankings</title>
+</head>
+
+<body>
+    <h1>Resume Rankings</h1>
+
+    <table border="1">
+        <tr>
+            <th>Rank</th>
+            <th>File Name</th>
+            <th>Score</th>
+        </tr>
+
+        <% resumes.forEach(resume=> { %>
+            <tr>
+                <td>
+                    <%= resume.rank %>
+                </td>
+                <td>
+                    <%= resume.originalName %>
+                </td>
+                <td>
+                    <%= resume.score %>
+                </td>
+            </tr>
+            <% }) %>
+    </table>
+</body>
+
+</html>

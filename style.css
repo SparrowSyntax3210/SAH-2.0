@@ -128,11 +128,22 @@ body {
   transform: scaleX(1);
 }
 
+.nav-part2.show {
+  right: 0;
+}
+
 /* Profile container */
 #profileCircle {
   position: relative;
   display: flex;
   align-items: center;
+}
+
+.menu-toggle {
+  display: none;
+  font-size: 26px;
+  cursor: pointer;
+  color: white;
 }
 
 /* Avatar */
@@ -166,17 +177,21 @@ body {
 
 .dropdown a:hover {
   background: #eee;
-<<<<<<< HEAD
-=======
 }
 
 .hidden {
   display: none;
->>>>>>> 93338859cdb177e485cfbbc1316a429cfd631e4b
 }
 
 .hidden {
   display: none;
+}
+
+.menu-toggle {
+  display: none;
+  font-size: 26px;
+  cursor: pointer;
+  color: white;
 }
 
 /* HERO SECTION */
@@ -186,10 +201,7 @@ body {
   overflow: hidden;
   color: white;
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> 93338859cdb177e485cfbbc1316a429cfd631e4b
 /* =================================================
    HERO VIDEO BACKGROUND
 ================================================= */
@@ -465,6 +477,24 @@ body {
   overflow: visible;
 }
 
+.key-box h3 {
+  color: white;
+  margin-top: 30px;
+  font-size: 30px;
+  text-align: center;
+  font-family: "Oswald", sans-serif;
+}
+
+.key-box p {
+  margin-top: 40px;
+  color: white;
+  font-size: 20px;
+  text-align: center;
+  position: relative;
+  left: 20%;
+  width: 300px;
+  font-family: "Oswald", sans-serif;
+}
 
 .download-section {
   position: absolute;
@@ -555,7 +585,20 @@ body {
 /* Button */
 .upload-btn {
   position: relative;
-  top: 30%;
+  top: 17%;
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background: #000;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  border-radius: 6px;
+}
+
+.submit-btn {
+  position: relative;
+  top: 20%;
   width: 100%;
   padding: 12px;
   border: none;
@@ -899,4 +942,219 @@ footer {
   margin: 0 10px;
   font-size: 1.2rem;
   text-decoration: none;
+}
+
+/* ================================
+   RESPONSIVE DESIGN (CLEAN FIXED)
+================================ */
+
+/* =========================
+   TABLETS (≤ 1024px)
+========================= */
+@media (max-width: 1024px) {
+
+  .about-text {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .about-text h1,
+  .description {
+    width: 100%;
+  }
+
+  .cards {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .card {
+    width: 45%;
+  }
+
+  .page2-container {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .page2-text-right {
+    width: 100%;
+  }
+
+  .upload-box {
+    width: 95%;
+    height: auto;
+    flex-direction: column;
+  }
+
+  .upload-left {
+    border-right: none;
+    border-bottom: 2px solid #000;
+  }
+
+  .upload-right {
+    padding: 15px;
+  }
+}
+
+/* =========================
+   MOBILE (≤ 768px)
+========================= */
+@media (max-width: 768px) {
+
+  /* ===== NAVBAR FIX ===== */
+
+  .nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 12px 20px;
+    z-index: 999;
+  }
+
+  .logo {
+    height: 26px;
+  }
+
+  /* Show hamburger */
+  .menu-toggle {
+    display: block;
+    font-size: 26px;
+    color: white;
+    cursor: pointer;
+  }
+
+  /* Hide menu */
+  .nav-part2 {
+    position: absolute;
+    top: 60px;
+    right: -100%;
+    background: #111;
+    flex-direction: column;
+    width: 220px;
+    padding: 20px;
+    border-radius: 10px 0 0 10px;
+    transition: 0.3s;
+  }
+
+  /* Show menu */
+  .nav-part2.show {
+    right: 0;
+  }
+
+  .nav-part2 h4 {
+    margin: 10px 0;
+  }
+
+  .nav-part2 a {
+    font-size: 16px;
+  }
+
+  /* Show when toggled */
+  .nav-part2.show {
+    display: flex;
+  }
+
+  /* ===== HERO TEXT ===== */
+  .text1,
+  .text2 {
+    font-size: 32px;
+  }
+
+  .fill-btn {
+    padding: 12px 24px;
+  }
+
+  /* ===== ABOUT ===== */
+  .small-title {
+    font-size: 24px;
+  }
+
+  .about-text h1 {
+    font-size: 28px;
+    line-height: 40px;
+  }
+
+  .card {
+    width: 100%;
+  }
+
+  /* ===== PAGE 2 ===== */
+  .page2 {
+    padding: 20px;
+  }
+
+  .page2-text-left {
+    font-size: 26px;
+  }
+
+  .page2-text-right {
+    font-size: 18px;
+  }
+
+  .key-box {
+    flex: 0 0 80vw;
+  }
+
+  /* ===== UPLOAD ===== */
+  .upload-left,
+  .upload-right {
+    flex: none;
+    width: 100%;
+  }
+
+  /* ===== CONTACT ===== */
+  .contact h1 {
+    font-size: 1.5rem;
+  }
+
+  .contact p {
+    font-size: 1rem;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer-links {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+  }
+}
+
+/* =========================
+   SMALL PHONES (≤ 480px)
+========================= */
+@media (max-width: 480px) {
+
+  .text1,
+  .text2 {
+    font-size: 26px;
+  }
+
+  .fill-btn {
+    padding: 10px 20px;
+  }
+
+  .loader-text-fill {
+    font-size: 8vw;
+  }
+
+  .logo {
+    height: 24px;
+  }
+
+  .avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .upload-box {
+    border-radius: 10px;
+  }
+
+  .upload-btn {
+    font-size: 14px;
+  }
 }

@@ -6,39 +6,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LexivaRank | AI Powered Resume Phraser</title>
 
-  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body>
 
-  <!-- Loader -->
   <div class="loader-container" aria-hidden="true">
     <h1 data-title="LexivaRank" class="loader-text-fill">LexivaRank</h1>
   </div>
 
-  <!-- Smooth Scroll Wrapper -->
   <div id="smooth-wrapper">
     <div id="smooth-content">
 
-      <!-- PAGE 1 -->
+      <!-- HERO -->
       <section class="page1">
         <nav class="nav">
-          <img src="./assets/logo.png" alt="LexivaRank logo" />
 
-          <div class="nav-part2">
+          <!-- Logo -->
+          <img src="./assets/logo.png" alt="LexivaRank logo" class="logo" />
+
+          <!-- Hamburger Button -->
+          <div class="menu-toggle" id="menuToggle">☰</div>
+
+          <!-- Navigation Links -->
+          <div class="nav-part2" id="navLinks">
             <h4><a href="#">Home</a></h4>
             <h4><a href="#">Work</a></h4>
             <h4><a href="#about">About</a></h4>
             <h4><a href="#">Contact</a></h4>
-            <div id="profileCircle" class="profile hidden">
-              <div style="background-color: white; width: 30px; height: 30px; border-radius: 50%;" class="avatar">
-                <div class="dropdown">
-                  <a id="logoutBtn">Logout</a>
-                </div>
-              </div>
+          </div>
+
         </nav>
 
         <div class="hero-video">
@@ -46,8 +44,8 @@
         </div>
 
         <div class="hero-section">
-          <p class="floating text1">The Most Powerful</p>
-          <p class="floating text2">AI Resume Phraser</p>
+          <p class="floating text1">AI Resume Optimization Platform</p>
+          <p class="floating text2">Write Smarter. Rank Higher. Get Hired.</p>
 
           <button id="getStartedBtn" class="fill-btn">
             <span class="fill"></span>
@@ -58,51 +56,59 @@
         </div>
       </section>
 
-      <!-- ABOUT SECTION -->
+      <!-- ABOUT -->
       <section class="about" id="#about">
         <p class="small-title">— About Us —</p>
 
         <div class="about-text">
           <h1>
-            CREATIVE STRATEGY FOR
-            <span>UNIQUE BRANDS</span>
+            SMART RESUME ENHANCEMENT FOR
+            <span>MODERN PROFESSIONALS</span>
           </h1>
 
           <p class="description">
-            We combine design and strategy to help brands stand out.
-            Our solutions turn ideas into experiences that connect,
-            inspire, and leave a lasting impact.
+            LexivaRank is an AI-powered resume optimization platform designed to help professionals
+            communicate their value with precision. Our system analyzes structure, phrasing strength,
+            keyword alignment, and readability to enhance how recruiters and hiring systems interpret
+            your experience.
+
+            The platform evaluates each statement based on impact, clarity, and professional tone.
+            Instead of rewriting blindly, LexivaRank preserves your achievements while strengthening
+            how they are presented. This ensures authenticity while improving effectiveness.
+
+            Whether you are applying for your first role or advancing into leadership positions,
+            LexivaRank helps position your experience in a way that aligns with modern hiring expectations.
           </p>
         </div>
 
         <div class="cards">
           <div class="card first">
             <i class="fa-solid fa-file"></i>
-            <h2>100+</h2>
-            <p>Projects Completed</p>
+            <h2>25,000+</h2>
+            <p>Resumes Enhanced Using AI Analysis</p>
           </div>
 
           <div class="card down">
             <i class="fa-solid fa-user"></i>
-            <h2>90+</h2>
-            <p>Trusted Partners</p>
+            <h2>12,000+</h2>
+            <p>Professionals Supported Worldwide</p>
           </div>
 
           <div class="card up">
             <i class="fa-solid fa-layer-group"></i>
-            <h2>350+</h2>
-            <p>Guidelines Created</p>
+            <h2>150+</h2>
+            <p>Career Domains Modeled</p>
           </div>
 
           <div class="card down">
             <i class="fa-solid fa-award"></i>
-            <h2>08+</h2>
-            <p>Years of Experience</p>
+            <h2>98%</h2>
+            <p>Recruiter Alignment Accuracy</p>
           </div>
         </div>
       </section>
 
-      <!-- PAGE 2 -->
+      <!-- FEATURES -->
       <section class="page2">
         <div class="page2-container">
           <div class="page2-text-left">
@@ -110,26 +116,70 @@
           </div>
           <div class="page2-text-right">
             <p>
-              Lorem ipsum dolor sit amet consectetur adipisicing elit.
-              Distinctio quos, magnam dicta nesciunt reprehenderit nobis fuga?
-              Asperiores provident tempora illum.
+              LexivaRank evaluates resume structure, communication strength, and keyword relevance
+              to improve how hiring systems and recruiters understand your experience.
+              Each enhancement increases clarity, impact, and professional positioning.
             </p>
           </div>
         </div>
 
         <div class="horizontal-wrapper">
           <div class="keydivs">
-            <div class="key-box"></div>
-            <div class="key-box"></div>
-            <div class="key-box"></div>
-            <div class="key-box"></div>
-            <div class="key-box"></div>
-            <div class="key-box"></div>
+
+            <div class="key-box">
+              <h3>Intelligent Phrase Optimization</h3>
+              <p>
+                Converts passive descriptions into achievement-focused statements.
+                Highlights results, responsibility, and measurable impact using
+                context-aware language analysis.
+              </p>
+            </div>
+
+            <div class="key-box">
+              <h3>ATS Compatibility Analysis</h3>
+              <p>
+                Reviews formatting, structure, and keyword placement to ensure compatibility
+                with Applicant Tracking Systems used by modern employers.
+              </p>
+            </div>
+
+            <div class="key-box">
+              <h3>Keyword Alignment Engine</h3>
+              <p>
+                Identifies missing industry terminology and integrates relevant keywords
+                naturally without compromising readability.
+              </p>
+            </div>
+
+            <div class="key-box">
+              <h3>Impact Scoring System</h3>
+              <p>
+                Generates a performance score based on clarity, quantified achievements,
+                and communication strength with actionable improvement suggestions.
+              </p>
+            </div>
+
+            <div class="key-box">
+              <h3>Professional Tone Calibration</h3>
+              <p>
+                Refines wording to reflect professional communication standards
+                expected in corporate and technical environments.
+              </p>
+            </div>
+
+            <div class="key-box">
+              <h3>Role-Specific Optimization</h3>
+              <p>
+                Adapts recommendations based on career stage, role type, and
+                industry hiring expectations.
+              </p>
+            </div>
+
           </div>
         </div>
       </section>
 
-      <!-- ================= UPLOAD SECTION ================= -->
+      <!-- UPLOAD -->
       <section class="upload-section">
 
         <div class="upload-box" id="uploadBox">
@@ -146,6 +196,7 @@
             <h2>Upload Your Resume</h2>
             <div id="fileList" class="file-list"></div>
             <button id="uploadBtn" class="upload-btn">Upload Files</button>
+            <button id="submitBtn" class="submit-btn" style="display:none;">Upload</button>
           </div>
 
         </div>
@@ -159,83 +210,90 @@
         </div>
 
       </section>
-
-      <!-- Contact Section -->
+      <!-- CONTACT -->
       <header class="contact">
         <div class="contact-content">
-          <h1>Speak with our 👨‍💻👩‍💻👨‍💼 experts about your project requirements.</h1>
-          <p>Let’s talk about how we can craft a user experience that not only looks great but drives real growth for
-            your
-            product.</p>
-          <a href="#" class="contact-btn">BOOK A CALL</a>
+          <h1>Optimize your professional narrative with expert guidance</h1>
+          <p>
+            LexivaRank combines AI-driven language optimization with practical career communication
+            strategy focused on clarity, measurable impact, and recruiter expectations.
+
+            Professionals use LexivaRank to strengthen applications, improve interview rates,
+            and present experience with confidence in competitive job markets.
+          </p>
+          <a href="#" class="contact-btn">Schedule Consultation</a>
         </div>
       </header>
 
-      <!-- Services Section -->
+      <!-- SERVICES -->
       <section class="services">
         <div class="service">
-          <h2>Design</h2>
-          <p>Your story, crafted through user-driven visuals.</p>
+          <h2>AI Resume Enhancement</h2>
+          <p>
+            Advanced language optimization that enhances clarity, impact, and recruiter perception
+            without changing the meaning of your experience.
+          </p>
         </div>
+
         <div class="service">
-          <h2>Development</h2>
-          <p>Crafting appealing, functional digital experiences.</p>
+          <h2>Career Positioning Strategy</h2>
+          <p>
+            Strategic guidance on presenting skills, achievements, and progression in a way
+            that supports long-term career growth.
+          </p>
         </div>
       </section>
 
-      <!-- Clients Section -->
+      <!-- CLIENTS -->
       <section class="clients">
-        <h3>We’ve helped over 200+ companies including</h3>
-        <div class="logos">
-          <span>WhatsApp</span>
-          <span>Amazon</span>
-          <span>Upwork</span>
-          <span>Dropbox</span>
-          <span>Shopify</span>
-          <span>YouTube</span>
-        </div>
-      </section>
+        <h3>
+          Used by professionals across technology, finance, healthcare, education,
+          and global enterprises
+        </h3>
 
-      <!-- Footer -->
-      <footer>
-        <div class="footer-top">
-          <h2>LexivaRank</h2>
-          <p>The Most Powerful AI Resume Phraser</p>
-          <form class="newsletter">
-            <input type="email" placeholder="Your email address">
-            <button type="submit">Subscribe</button>
-          </form>
-        </div>
-        <div class="footer-links">
-          <ul>
-            <li><a href="#">Our services</a></li>
-            <li><a href="#">Projects</a></li>
-            <li><a href="#">Our Process</a></li>
-            <li><a href="#">Referral Program</a></li>
-          </ul>
-          <ul>
-            <li><a href="#">About Us</a></li>
-            <li><a href="#">Resources</a></li>
-            <li><a href="#">Contact</a></li>
-            <li><a href="#">Blog</a></li>
-          </ul>
-        </div>
-        <div class="social">
-          <a href="#">🌐</a>
-          <a href="#">📘</a>
-          <a href="#">🐦</a>
-          <a href="#">📸</a>
-        </div>
-      </footer>
+        <!-- FOOTER -->
+        <footer>
+          <div class="footer-top">
+            <h2>LexivaRank</h2>
+            <p>
+              Built for modern hiring systems and real-world career growth.
+              Helping professionals communicate value with precision,
+              confidence, and measurable impact.
+            </p>
+            <form class="newsletter">
+              <input type="email" placeholder="Your email address">
+              <button type="submit">Subscribe</button>
+            </form>
+          </div>
 
+          <div class="footer-links">
+            <ul>
+              <li><a href="#">Our services</a></li>
+              <li><a href="#">Projects</a></li>
+              <li><a href="#">Our Process</a></li>
+              <li><a href="#">Referral Program</a></li>
+            </ul>
+            <ul>
+              <li><a href="#">About Us</a></li>
+              <li><a href="#">Resources</a></li>
+              <li><a href="#">Contact</a></li>
+              <li><a href="#">Blog</a></li>
+            </ul>
+          </div>
 
+          <div class="social">
+            <a href="#">🌐</a>
+            <a href="#">📘</a>
+            <a href="#">🐦</a>
+            <a href="#">📸</a>
+          </div>
+        </footer>
 
-      <!-- GSAP -->
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollSmoother.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/gsap.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollTrigger.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.13.0/ScrollSmoother.min.js"></script>
+        <script src="script.js"></script>
 
-      <script src="script.js"></script>
 </body>
 
 </html>
