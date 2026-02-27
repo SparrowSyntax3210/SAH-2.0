@@ -2,17 +2,21 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/users");
 
-// ================= SHOW PAGES =================
-
-router.get("/login", (req, res) => res.render("login"));
-router.get("/register", (req, res) => res.render("register"));
-
 // ================= REGISTER =================
 router.post("/register", async (req, res) => {
     try {
         const { username, email, password } = req.body;
+
+        if (!username || !email || !password) {
+            return res.send("All fields are required");
+        }
+
+        const existing = await User.findOne({ email });
+        if (existing) return res.send("User already exists");
+
         const newUser = new User({ username, email, password });
         await newUser.save();
+
         res.redirect("/login");
     } catch (err) {
         console.error(err);
@@ -28,16 +32,14 @@ router.post("/login", async (req, res) => {
 
         if (!user) return res.send("Invalid email or password ❌");
 
-        res.redirect("/?login=success");
+        // ✅ session stored consistently
+        req.session.user = user;
+
+        res.redirect("/upload");
     } catch (err) {
         console.error(err);
         res.send("Login error");
     }
-});
-
-// ================= HOME =================
-router.get("/home", (req, res) => {
-    res.redirect("/index.html");
 });
 
 module.exports = router;

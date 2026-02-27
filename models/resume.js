@@ -1,15 +1,12 @@
 const mongoose = require("mongoose");
 
-const ResumeSchema = new mongoose.Schema({
+const resumeSchema = new mongoose.Schema({
+    userId: String,
     filename: String,
-    originalName: String,
-    extractedText: String,
+    filepath: String,
+    extractedText: String,   // ✅ NEW FIELD
     score: Number,
-    rank: Number,
-    uploadedAt: {
-        type: Date,
-        default: Date.now
-    }
+    uploadedAt: { type: Date, default: Date.now }
 });
 
-module.exports = mongoose.model("Resume", ResumeSchema);
+module.exports = mongoose.model("Resume", resumeSchema);

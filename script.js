@@ -4,8 +4,16 @@ gsap.registerPlugin(ScrollTrigger, ScrollSmoother);
 let smoother;
 let mm;
 
-/* ================= LOADER ================= */
+/* ================= DOM READY ================= */
 document.addEventListener("DOMContentLoaded", () => {
+
+  /* ===== SHOW LOGOUT IF SESSION EXISTS ===== */
+  const logoutBtn = document.getElementById("logoutBtn");
+  if (logoutBtn && document.cookie.includes("connect.sid")) {
+    logoutBtn.style.display = "inline-block";
+  }
+
+  /* ================= LOADER ================= */
   const tl = gsap.timeline({ onComplete: initSmoothScroll });
 
   tl.set(".loader-container", { autoAlpha: 1 })
@@ -29,14 +37,13 @@ document.addEventListener("DOMContentLoaded", () => {
       stagger: 0.12,
       ease: "power3.out",
     });
+
 });
 
 /* ================= SMOOTH SCROLL ================= */
 function initSmoothScroll() {
-
   if (smoother) smoother.kill();
 
-  // Disable smoother on small screens
   if (window.innerWidth > 768) {
     smoother = ScrollSmoother.create({
       wrapper: "#smooth-wrapper",
@@ -53,14 +60,12 @@ function initSmoothScroll() {
 /* ================= ANIMATIONS ================= */
 function initAnimations() {
 
-  // Kill old triggers before rebuilding
   ScrollTrigger.getAll().forEach(t => t.kill());
 
   if (mm) mm.kill();
   mm = gsap.matchMedia();
 
   /* ===== COMMON ANIMATIONS ===== */
-
   gsap.utils.toArray(".card").forEach(card => {
     gsap.from(card, {
       opacity: 0,
@@ -73,48 +78,112 @@ function initAnimations() {
       }
     });
   });
+
+  /* ================= UPLOAD LOGIC ================= */
   const uploadBtn = document.getElementById("uploadBtn");
   const submitBtn = document.getElementById("submitBtn");
   const fileInput = document.getElementById("fileInput");
   const fileList = document.getElementById("fileList");
   const browseText = document.querySelector(".browse");
+  const uploadBox = document.getElementById("uploadBox");
+  const successBox = document.getElementById("successBox");
 
-  let selectedFiles = [];
+  if (uploadBtn && submitBtn && fileInput) {
 
-  // 🔒 Force hide submit button on load (overrides CSS issues)
-  submitBtn.style.display = "none";
+    let selectedFiles = [];
 
-  // Open file picker
-  uploadBtn.addEventListener("click", () => fileInput.click());
-  if (browseText) browseText.addEventListener("click", () => fileInput.click());
+    submitBtn.style.display = "none";
 
-  fileInput.addEventListener("change", () => {
-    const files = Array.from(fileInput.files);
-    if (files.length === 0) return;
+    uploadBtn.addEventListener("click", () => fileInput.click());
+    if (browseText) browseText.addEventListener("click", () => fileInput.click());
 
-    files.forEach(file => {
-      selectedFiles.push(file);
+    fileInput.addEventListener("change", () => {
+      const files = Array.from(fileInput.files);
+      if (!files.length) return;
 
-      const item = document.createElement("div");
-      item.className = "file-item";
-      item.textContent = file.name;
-      fileList.appendChild(item);
+      files.forEach(file => {
+        selectedFiles.push(file);
+
+        const item = document.createElement("div");
+        item.className = "file-item";
+        item.textContent = file.name;
+        fileList.appendChild(item);
+      });
+
+      uploadBtn.textContent = "Upload More";
+      submitBtn.style.display = "inline-block";
     });
 
-    // Change button text after first selection
-    uploadBtn.textContent = "Upload More";
+    /* 🚀 SEND FILES TO BACKEND */
+    submitBtn.addEventListener("click", async () => {
+      if (!selectedFiles.length) return alert("Select files first");
 
-    // ✅ Show Upload button ONLY when at least 1 file selected
-    if (selectedFiles.length > 0) {
-      submitBtn.style.display = "inline-block";
-    }
-  });
+      const formData = new FormData();
+      selectedFiles.forEach(file => formData.append("resume", file));
+
+      try {
+        const res = await fetch("/upload", {
+          method: "POST",
+          body: formData
+        });
+
+        const text = await res.text();
+
+        if (uploadBox) uploadBox.style.display = "none";
+        if (successBox) successBox.style.display = "block";
+
+        console.log("Server response:", text);
+
+      } catch (err) {
+        console.error("Upload error:", err);
+        alert("Upload failed");
+      }
+    });
+
+    const formData = new FormData();
+    formData.append("resume", fileInput.files[0]);
+
+    fetch("/upload", {
+      method: "POST",
+      body: formData
+    })
+      .then(res => res.json())
+      .then(data => alert(data.message))
+      .catch(err => console.error(err));
+
+    uploadBtn.addEventListener("click", async () => {
+      if (fileInput.files.length === 0) {
+        alert("Please select files first");
+        return;
+      }
+
+      const formData = new FormData();
+
+      for (let file of fileInput.files) {
+        formData.append("resume", file);
+      }
+
+      try {
+        const res = await fetch("/upload", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+        console.log("SERVER RESPONSE:", data);
+        alert("Upload successful!");
+      } catch (err) {
+        console.error(err);
+        alert("Upload failed");
+      }
+    });
+
+  }
+
   /* ===== DESKTOP ONLY ===== */
   mm.add("(min-width: 1025px)", () => {
-
     const container = document.querySelector(".keydivs");
     const section = document.querySelector(".page2");
-
     if (!container || !section) return;
 
     const getScrollAmount = () =>
@@ -135,25 +204,8 @@ function initAnimations() {
     });
   });
 
-  /* ===== TABLET ===== */
-  mm.add("(min-width: 768px) and (max-width: 1024px)", () => {
-    gsap.from(".key-box", {
-      opacity: 0,
-      y: 30,
-      duration: 0.5,
-      stagger: 0.1,
-      scrollTrigger: {
-        trigger: ".page2",
-        start: "top 80%",
-        invalidateOnRefresh: true
-      }
-    });
-  });
-
   /* ===== MOBILE ===== */
   mm.add("(max-width: 767px)", () => {
-
-    // Remove transforms from horizontal scroll
     gsap.set(".keydivs", { clearProps: "all" });
 
     gsap.from(".upload-box", {
@@ -168,41 +220,14 @@ function initAnimations() {
     });
   });
 
-  /* ===== GLOBAL ANIMATIONS ===== */
-
-  gsap.from(".contact-content, .contact-btn", {
-    opacity: 0,
-    y: 40,
-    duration: 0.8,
-    stagger: 0.2,
-    scrollTrigger: {
-      trigger: ".contact",
-      start: "top 70%",
-      invalidateOnRefresh: true
-    }
-  });
-
-  gsap.from(".services, .clients", {
-    opacity: 0,
-    y: 40,
-    duration: 0.8,
-    scrollTrigger: {
-      trigger: ".services",
-      start: "top 80%",
-      invalidateOnRefresh: true
-    }
-  });
-
   ScrollTrigger.refresh();
 }
 
-/* ================= REBUILD ON RESIZE ================= */
+/* ================= RESIZE ================= */
 let resizeTimer;
 window.addEventListener("resize", () => {
   clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => {
-    initSmoothScroll();
-  }, 300);
+  resizeTimer = setTimeout(initSmoothScroll, 300);
 });
 
 /* ================= MOBILE MENU ================= */
