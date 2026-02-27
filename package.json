@@ -11,6 +11,8 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "canvas": "^3.2.1",
+    "child_process": "^1.0.2",
     "ejs": "^4.0.1",
     "express": "^5.2.1",
     "express-session": "^1.19.0",
@@ -19,7 +21,10 @@
     "multer": "^2.0.2",
     "natural": "^8.1.1",
     "nodemon": "^3.1.14",
-    "pdf-parse": "^2.4.5",
-    "stopword": "^3.1.5"
+    "pdf-parse": "^1.1.1",
+    "pdf-poppler": "^0.2.3",
+    "pdfjs-dist": "^3.11.174",
+    "stopword": "^3.1.5",
+    "tesseract.js": "^7.0.0"
   }
 }

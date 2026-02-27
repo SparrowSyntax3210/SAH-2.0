@@ -3,32 +3,67 @@
 
 <head>
     <title>Resume Rankings</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 80%;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            border: 1px solid #000;
+            text-align: center;
+        }
+
+        th {
+            background: #f0f0f0;
+        }
+    </style>
 </head>
 
 <body>
     <h1>Resume Rankings</h1>
 
-    <table border="1">
-        <tr>
-            <th>Rank</th>
-            <th>File Name</th>
-            <th>Score</th>
-        </tr>
-
-        <% resumes.forEach(resume=> { %>
+    <table>
+        <thead>
             <tr>
-                <td>
-                    <%= resume.rank %>
-                </td>
-                <td>
-                    <%= resume.originalName %>
-                </td>
-                <td>
-                    <%= resume.score %>
-                </td>
+                <th>Rank</th>
+                <th>File Name</th>
+                <th>Score</th>
             </tr>
-            <% }) %>
+        </thead>
+        <tbody id="results"></tbody>
     </table>
+
+    <script>
+        fetch("/results")
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("Not logged in");
+                }
+                return res.json();
+            })
+            .then(data => {
+                const tbody = document.getElementById("results");
+                tbody.innerHTML = "";
+
+                data.resumes.forEach((r, i) => {
+                    const row = document.createElement("tr");
+                    row.innerHTML = `
+              <td>${i + 1}</td>
+              <td>${r.filename}</td>
+              <td>${r.score.toFixed(2)}</td>
+          `;
+                    tbody.appendChild(row);
+                });
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Session expired. Please login again.");
+                window.location.href = "/login";
+            });
+    </script>
 </body>
 
 </html>

@@ -1,210 +1,254 @@
 const express = require("express");
 const path = require("path");
+const fs = require("fs");
 const multer = require("multer");
 const session = require("express-session");
-const fs = require("fs");
-const pdf = require("pdf-parse");
 const natural = require("natural");
 const sw = require("stopword");
-
-const app = express();
+const { DOMMatrix } = require("canvas");
 const Resume = require("../models/Resume");
 const authRoutes = require("../routes/auth");
 
-// ================= SESSION =================
-app.use(session({
-    secret: "secret-key",
-    resave: false,
-    saveUninitialized: false
-}));
+/* ======================= PDFJS FIX ======================= */
+global.DOMMatrix = DOMMatrix;
 
-// ================= MIDDLEWARE =================
+// ✅ Node-safe legacy build
+const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
+
+console.log("✅ pdfjs getDocument type:", typeof pdfjsLib.getDocument);
+
+/* ======================= APP ======================= */
+const app = express();
+
+/* ======================= SESSION ======================= */
+app.use(
+    session({
+        secret: "secret-key",
+        resave: false,
+        saveUninitialized: false
+    })
+);
+
+/* ======================= MIDDLEWARE ======================= */
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, ".."))); // serve CSS, JS, assets
+app.use(express.static(path.join(__dirname, "..")));
 
-// ================= AUTH CHECK =================
+/* ======================= AUTH ======================= */
 function isLoggedIn(req, res, next) {
     if (req.session.user) return next();
-    res.redirect("/login");
+    return res.redirect("/login");
 }
 
-// ================= UPLOAD STORAGE =================
+/* ======================= MULTER ======================= */
 const uploadDir = path.join(__dirname, "..", "uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
 
 const storage = multer.diskStorage({
     destination: uploadDir,
-    filename: (req, file, cb) => {
-        cb(null, Date.now() + "-" + file.originalname);
-    }
+    filename: (req, file, cb) =>
+        cb(null, `${Date.now()}-${file.originalname}`)
 });
+
 const upload = multer({ storage });
 
-// ================= HTML ROUTES =================
-app.get("/", (req, res) => res.sendFile(path.join(__dirname, "..", "index.html")));
-app.get("/login", (req, res) => res.sendFile(path.join(__dirname, "..", "login.html")));
-app.get("/register", (req, res) => res.sendFile(path.join(__dirname, "..", "register.html")));
+/* ======================= HTML ROUTES ======================= */
+app.get("/", (req, res) =>
+    res.sendFile(path.join(__dirname, "..", "index.html"))
+);
 
-app.post("/upload", upload.array("resume"), (req, res) => {
-    if (!req.files || req.files.length === 0) {
-        return res.status(400).send("No files uploaded");
+app.get("/login", (req, res) =>
+    res.sendFile(path.join(__dirname, "..", "login.html"))
+);
+
+app.get("/register", (req, res) =>
+    res.sendFile(path.join(__dirname, "..", "register.html"))
+);
+
+app.get("/result", isLoggedIn, (req, res) =>
+    res.sendFile(path.join(__dirname, "..", "result.html"))
+);
+
+/* ======================= PDF TEXT EXTRACTION ======================= */
+async function extractText(filePath) {
+    console.log("📄 Reading PDF:", filePath);
+
+    const data = new Uint8Array(fs.readFileSync(filePath));
+    const pdf = await pdfjsLib.getDocument({ data }).promise;
+
+    let text = "";
+
+    for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const content = await page.getTextContent();
+        text += content.items.map(item => item.str).join(" ") + " ";
     }
 
-    // Send back saved file paths
-    const filePaths = req.files.map(f => f.path);
-    res.json({ message: "Files uploaded successfully", files: filePaths });
-});
+    text = text.trim();
 
-// ================= PDF SCORING LOGIC =================
-const WEIGHTS = { partial: 0.2, relative: 0.25, penalty: 0.15, consistency: 0.2, duplicate: 0.2 };
+    if (!text) {
+        throw new Error("Unreadable or scanned PDF (no text)");
+    }
 
-async function extractText(filePath) {
-    const data = fs.readFileSync(filePath);
-    const pdfData = await pdf(data);
-    return pdfData.text || "";
+    console.log("✅ Extracted chars:", text.length);
+    return text;
 }
+
+/* ======================= SCORING ======================= */
+const WEIGHTS = {
+    partial: 0.2,
+    relative: 0.25,
+    penalty: 0.15,
+    consistency: 0.2,
+    duplicate: 0.2
+};
 
 function partialCreditScore(text) {
     const vague = ["basic", "familiar", "learning", "exposure"];
     const strong = ["expert", "advanced", "certified", "professional", "experienced"];
     let score = 0;
     const t = text.toLowerCase();
-    vague.forEach(w => { if (t.includes(w)) score += 0.3; });
-    strong.forEach(w => { if (t.includes(w)) score += 1; });
+    vague.forEach(w => t.includes(w) && (score += 0.3));
+    strong.forEach(w => t.includes(w) && (score += 1));
     return score;
 }
 
 function keywordPenalty(text) {
     const words = text.toLowerCase().split(/\s+/);
-    const freqMap = {};
-    words.forEach(w => freqMap[w] = (freqMap[w] || 0) + 1);
-    const maxFreq = Math.max(...Object.values(freqMap), 0);
-    return -0.05 * maxFreq;
+    const freq = {};
+    words.forEach(w => (freq[w] = (freq[w] || 0) + 1));
+    return -0.05 * Math.max(...Object.values(freq));
 }
 
 function skillProjectConsistency(text) {
-    const pairs = [["python", "project"], ["java", "application"], ["machine learning", "model"], ["data science", "analysis"], ["web", "website"]];
+    const rules = [
+        ["python", "project"],
+        ["java", "application"],
+        ["machine learning", "model"],
+        ["data science", "analysis"],
+        ["web", "website"]
+    ];
     const t = text.toLowerCase();
-    return pairs.reduce((acc, [s, p]) => acc + ((t.includes(s) && t.includes(p)) ? 1 : 0), 0);
+    return rules.reduce(
+        (s, [a, b]) => s + (t.includes(a) && t.includes(b) ? 1 : 0),
+        0
+    );
 }
 
-function computeTFIDFMatrix(texts) {
-    const corpus = texts.map(t => sw.removeStopwords(t.toLowerCase().split(/\s+/)).join(" "));
+function computeTFIDF(texts) {
     const tfidf = new natural.TfIdf();
-    corpus.forEach(doc => tfidf.addDocument(doc));
+    texts.forEach(t =>
+        tfidf.addDocument(
+            sw.removeStopwords(t.toLowerCase().split(/\s+/)).join(" ")
+        )
+    );
     return tfidf;
 }
 
 function cosineSimilarity(a, b) {
-    const words = new Set([...Object.keys(a), ...Object.keys(b)]);
+    const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
     let dot = 0, magA = 0, magB = 0;
-    words.forEach(w => {
-        const x = a[w] || 0, y = b[w] || 0;
-        dot += x * y; magA += x * x; magB += y * y;
+    keys.forEach(k => {
+        const x = a[k] || 0, y = b[k] || 0;
+        dot += x * y;
+        magA += x * x;
+        magB += y * y;
     });
     return magA && magB ? dot / Math.sqrt(magA * magB) : 0;
 }
 
 function relativeScore(tfidf) {
-    const n = tfidf.documents.length;
-    const scores = [];
-    for (let i = 0; i < n; i++) {
-        let sumSim = 0, count = 0;
-        for (let j = 0; j < n; j++) {
-            if (i === j) continue;
-            const sim = cosineSimilarity(tfidf.documents[i], tfidf.documents[j]);
-            sumSim += sim; count++;
-        }
-        scores.push(count ? sumSim / count : 0);
-    }
-    return scores;
+    return tfidf.documents.map((doc, i) => {
+        let sum = 0, count = 0;
+        tfidf.documents.forEach((other, j) => {
+            if (i !== j) {
+                sum += cosineSimilarity(doc, other);
+                count++;
+            }
+        });
+        return count ? sum / count : 0;
+    });
 }
 
 function duplicateScore(tfidf) {
-    const n = tfidf.documents.length;
-    const scores = [];
-    for (let i = 0; i < n; i++) {
-        let maxSim = 0;
-        for (let j = 0; j < n; j++) {
-            if (i === j) continue;
-            const sim = cosineSimilarity(tfidf.documents[i], tfidf.documents[j]);
-            if (sim > maxSim) maxSim = sim;
-        }
-        scores.push(maxSim > 0.9 ? 0 : 1);
-    }
-    return scores;
+    return tfidf.documents.map((doc, i) => {
+        let max = 0;
+        tfidf.documents.forEach((other, j) => {
+            if (i !== j) max = Math.max(max, cosineSimilarity(doc, other));
+        });
+        return max > 0.9 ? 0 : 1;
+    });
 }
 
 async function computeScores(filePaths) {
-    const resumes = [], names = [];
-    for (const path of filePaths) {
-        const text = await extractText(path);
-        if (text.trim()) {
-            resumes.push(text);
-            names.push(path.split(/[\\/]/).pop());
+    const texts = [];
+    const names = [];
+
+    for (const filePath of filePaths) {
+        try {
+            const text = await extractText(filePath);
+            texts.push(text);
+            names.push(path.basename(filePath));
+        } catch (err) {
+            console.error("❌ Skipping:", err.message);
         }
     }
 
-    const tfidf = computeTFIDFMatrix(resumes);
-    const partial = resumes.map(partialCreditScore);
-    const penalty = resumes.map(keywordPenalty);
-    const consistency = resumes.map(skillProjectConsistency);
-    const relative = relativeScore(tfidf);
-    const duplicate = duplicateScore(tfidf);
+    if (!texts.length) {
+        throw new Error("No readable PDFs found");
+    }
 
-    const finalScores = resumes.map((_, i) =>
-        WEIGHTS.partial * partial[i] +
-        WEIGHTS.relative * relative[i] +
-        WEIGHTS.penalty * penalty[i] +
-        WEIGHTS.consistency * consistency[i] +
-        WEIGHTS.duplicate * duplicate[i]
-    );
+    const tfidf = computeTFIDF(texts);
 
-    return names.map((n, i) => [n, finalScores[i]]).sort((a, b) => b[1] - a[1]);
+    const results = texts.map((t, i) => [
+        names[i],
+        WEIGHTS.partial * partialCreditScore(t) +
+        WEIGHTS.relative * relativeScore(tfidf)[i] +
+        WEIGHTS.penalty * keywordPenalty(t) +
+        WEIGHTS.consistency * skillProjectConsistency(t) +
+        WEIGHTS.duplicate * duplicateScore(tfidf)[i]
+    ]);
+
+    console.log("🏆 FINAL SCORES:", results);
+    return results.sort((a, b) => b[1] - a[1]);
 }
 
-// ================= UPLOAD ENDPOINT =================
+/* ======================= UPLOAD ======================= */
 app.post("/upload", isLoggedIn, upload.array("resume"), async (req, res) => {
     try {
-        if (!req.files || req.files.length === 0)
-            return res.status(400).json({ message: "No files uploaded" });
+        console.log("📥 Upload received:", req.files.length, "files");
 
-        const filePaths = req.files.map(f => f.path);
-        const results = await computeScores(filePaths);
+        const results = await computeScores(req.files.map(f => f.path));
 
-        const savedResumes = [];
+        await Resume.deleteMany({ userId: req.session.user.id });
+
         for (const [filename, score] of results) {
-            const resume = new Resume({
+            await new Resume({
                 userId: req.session.user.id,
                 filename,
-                filepath: "uploads/" + filename,
+                filepath: `uploads/${filename}`,
                 score
-            });
-            await resume.save();
-            savedResumes.push(resume);
+            }).save();
         }
 
-        res.json({ success: true, results: savedResumes });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Upload failed" });
+        res.redirect("/result");
+    } catch (err) {
+        console.error("❌ ERROR:", err.message);
+        res.status(400).json({ error: err.message });
     }
 });
 
-// ================= RESULTS ENDPOINT =================
+/* ======================= RESULTS ======================= */
 app.get("/results", isLoggedIn, async (req, res) => {
-    const resumes = await Resume.find({ userId: req.session.user.id });
+    const resumes = await Resume.find({ userId: req.session.user.id })
+        .sort({ score: -1 });
     res.json({ resumes });
 });
 
-// ================= LOGOUT =================
-app.get("/logout", (req, res) => {
-    req.session.destroy(() => res.redirect("/login"));
-});
+/* ======================= LOGOUT ======================= */
+app.get("/logout", (req, res) =>
+    req.session.destroy(() => res.redirect("/login"))
+);
 
-// ================= AUTH ROUTES =================
 app.use("/", authRoutes);
-
 module.exports = app;

@@ -35,7 +35,7 @@ router.post("/login", async (req, res) => {
         // ✅ session stored consistently
         req.session.user = user;
 
-        res.redirect("/upload");
+        res.redirect("/index.html");
     } catch (err) {
         console.error(err);
         res.send("Login error");
