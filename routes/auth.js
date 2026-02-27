@@ -40,8 +40,6 @@ router.post("/login", async (req, res) => {
         res.send("Login error");
     }
 });
-
-/* ================= AUTH STATUS ================= */
 // ================= AUTH STATUS =================
 router.get("/auth-status", (req, res) => {
     if (req.session.user) {
