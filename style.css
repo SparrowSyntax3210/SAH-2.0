@@ -183,15 +183,16 @@ body {
   display: none;
 }
 
-.hidden {
-  display: none;
-}
-
 .menu-toggle {
   display: none;
   font-size: 26px;
   cursor: pointer;
   color: white;
+}
+
+/* Dropdown visibility */
+.dropdown.show {
+  display: block;
 }
 
 /* HERO SECTION */

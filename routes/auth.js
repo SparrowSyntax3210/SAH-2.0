@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const User = require("../models/users");
 
-// ================= REGISTER =================
+/* ================= REGISTER ================= */
 router.post("/register", async (req, res) => {
     try {
         const { username, email, password } = req.body;
@@ -24,7 +24,7 @@ router.post("/register", async (req, res) => {
     }
 });
 
-// ================= LOGIN =================
+/* ================= LOGIN ================= */
 router.post("/login", async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -32,7 +32,6 @@ router.post("/login", async (req, res) => {
 
         if (!user) return res.send("Invalid email or password ❌");
 
-        // ✅ session stored consistently
         req.session.user = user;
 
         res.redirect("/index.html");
@@ -40,6 +39,35 @@ router.post("/login", async (req, res) => {
         console.error(err);
         res.send("Login error");
     }
+});
+
+/* ================= AUTH STATUS ================= */
+// ================= AUTH STATUS =================
+router.get("/auth-status", (req, res) => {
+    if (req.session.user) {
+        res.json({
+            loggedIn: true,
+            user: {
+                username: req.session.user.username,
+                email: req.session.user.email
+            }
+        });
+    } else {
+        res.json({ loggedIn: false });
+    }
+});
+
+/* ================= LOGOUT ================= */
+router.get("/logout", (req, res) => {
+    req.logout?.(() => { });
+    req.session.destroy(err => {
+        if (err) {
+            console.error("Session destroy error:", err);
+            return res.status(500).send("Logout failed");
+        }
+        res.clearCookie("connect.sid");
+        res.redirect("/index.html");
+    });
 });
 
 module.exports = router;

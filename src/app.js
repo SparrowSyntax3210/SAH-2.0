@@ -15,8 +15,6 @@ global.DOMMatrix = DOMMatrix;
 // ✅ Node-safe legacy build
 const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
 
-console.log("✅ pdfjs getDocument type:", typeof pdfjsLib.getDocument);
-
 /* ======================= APP ======================= */
 const app = express();
 
@@ -40,6 +38,13 @@ function isLoggedIn(req, res, next) {
     return res.redirect("/login");
 }
 
+app.get("/auth-status", (req, res) => {
+    res.json({
+        loggedIn: !!req.session.user
+    });
+});
+
+app.post("/login", require("../routes/auth"));
 /* ======================= MULTER ======================= */
 const uploadDir = path.join(__dirname, "..", "uploads");
 if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
@@ -68,6 +73,13 @@ app.get("/register", (req, res) =>
 app.get("/result", isLoggedIn, (req, res) =>
     res.sendFile(path.join(__dirname, "..", "result.html"))
 );
+
+app.get("/logout", (req, res) =>
+    res.sendFile(path.join(__dirname, "..", "index.html"))
+);
+
+app.use("/auth", authRoutes);
+
 
 /* ======================= PDF TEXT EXTRACTION ======================= */
 async function extractText(filePath) {
@@ -250,5 +262,4 @@ app.get("/logout", (req, res) =>
     req.session.destroy(() => res.redirect("/login"))
 );
 
-app.use("/", authRoutes);
 module.exports = app;
