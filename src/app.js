@@ -12,7 +12,7 @@ const authRoutes = require("../routes/auth");
 /* ======================= PDFJS FIX ======================= */
 global.DOMMatrix = DOMMatrix;
 
-// ✅ Node-safe legacy build
+// Node-safe legacy build
 const pdfjsLib = require("pdfjs-dist/legacy/build/pdf.js");
 
 /* ======================= APP ======================= */
@@ -26,37 +26,6 @@ app.use(
         saveUninitialized: false
     })
 );
-
-/* ======================= MIDDLEWARE ======================= */
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "..")));
-
-/* ======================= AUTH ======================= */
-function isLoggedIn(req, res, next) {
-    if (req.session.user) return next();
-    return res.redirect("/login");
-}
-
-app.get("/auth-status", (req, res) => {
-    res.json({
-        loggedIn: !!req.session.user
-    });
-});
-
-app.post("/login", require("../routes/auth"));
-/* ======================= MULTER ======================= */
-const uploadDir = path.join(__dirname, "..", "uploads");
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
-
-const storage = multer.diskStorage({
-    destination: uploadDir,
-    filename: (req, file, cb) =>
-        cb(null, `${Date.now()}-${file.originalname}`)
-});
-
-const upload = multer({ storage });
-
 /* ======================= HTML ROUTES ======================= */
 app.get("/", (req, res) =>
     res.sendFile(path.join(__dirname, "..", "index.html"))
@@ -80,9 +49,51 @@ app.get("/logout", (req, res) =>
 
 app.use("/auth", authRoutes);
 
+/* ======================= MIDDLEWARE ======================= */
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "..")));
+
+/* ======================= AUTH ======================= */
+function isLoggedIn(req, res, next) {
+    if (req.session.user) return next();
+    return res.redirect("/login");
+}
+
+app.get("/auth-status", (req, res) => {
+    res.json({
+        loggedIn: !!req.session.user
+    });
+});
+
+app.post("/login", require("../routes/auth"));
+
+/* ======================= FOLDERS ======================= */
+const uploadDir = path.join(process.cwd(), "upload");
+const reportDir = path.join(uploadDir, "report");
+
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+if (!fs.existsSync(reportDir)) {
+    fs.mkdirSync(reportDir, { recursive: true });
+}
+
+/* ======================= MULTER ======================= */
+
+const storage = multer.diskStorage({
+    destination: uploadDir,
+    filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
+    }
+});
+
+const upload = multer({ storage });
+
 
 /* ======================= PDF TEXT EXTRACTION ======================= */
-async function extractText(filePath) {
+async function extractText(filePath, originalFileName) {
     console.log("📄 Reading PDF:", filePath);
 
     const data = new Uint8Array(fs.readFileSync(filePath));
@@ -102,8 +113,27 @@ async function extractText(filePath) {
         throw new Error("Unreadable or scanned PDF (no text)");
     }
 
+    // ✅ SAFE filename
+    const safeName = (originalFileName || "resume")
+        .replace(/[^a-z0-9]/gi, "_");
+
+    // ✅ REPORT PATH
+    const reportPath = path.join(
+        reportDir,
+        `${Date.now()}_${safeName}.txt`
+    );
+
+    // ✅ WRITE FILE
+    fs.writeFileSync(reportPath, text, "utf8");
+
     console.log("✅ Extracted chars:", text.length);
-    return text;
+    console.log("📝 Saved report:", reportPath);
+
+    return {
+        text,
+        reportPath,
+        charCount: text.length
+    };
 }
 
 /* ======================= SCORING ======================= */
@@ -149,11 +179,20 @@ function skillProjectConsistency(text) {
 
 function computeTFIDF(texts) {
     const tfidf = new natural.TfIdf();
-    texts.forEach(t =>
+
+    texts.forEach((t, index) => {
+        if (typeof t !== "string") {
+            console.error(`❌ TFIDF skipped non-string at index ${index}:`, t);
+            return;
+        }
+
         tfidf.addDocument(
-            sw.removeStopwords(t.toLowerCase().split(/\s+/)).join(" ")
-        )
-    );
+            sw.removeStopwords(
+                t.toLowerCase().split(/\s+/)
+            ).join(" ")
+        );
+    });
+
     return tfidf;
 }
 
@@ -198,9 +237,17 @@ async function computeScores(filePaths) {
 
     for (const filePath of filePaths) {
         try {
-            const text = await extractText(filePath);
-            texts.push(text);
+            // 🔥 ONLY extract text string
+            const result = await extractText(filePath);
+
+            if (typeof result.text !== "string") {
+                console.error("❌ Invalid extractText result:", result);
+                continue;
+            }
+
+            texts.push(result.text);
             names.push(path.basename(filePath));
+
         } catch (err) {
             console.error("❌ Skipping:", err.message);
         }
@@ -211,44 +258,102 @@ async function computeScores(filePaths) {
     }
 
     const tfidf = computeTFIDF(texts);
+    const rel = relativeScore(tfidf);
+    const dup = duplicateScore(tfidf);
 
     const results = texts.map((t, i) => [
         names[i],
         WEIGHTS.partial * partialCreditScore(t) +
-        WEIGHTS.relative * relativeScore(tfidf)[i] +
+        WEIGHTS.relative * rel[i] +
         WEIGHTS.penalty * keywordPenalty(t) +
         WEIGHTS.consistency * skillProjectConsistency(t) +
-        WEIGHTS.duplicate * duplicateScore(tfidf)[i]
+        WEIGHTS.duplicate * dup[i]
     ]);
 
     console.log("🏆 FINAL SCORES:", results);
-    return results.sort((a, b) => b[1] - a[1]);
+    const sorted = results.sort((a, b) => b[1] - a[1]);
+
+    return normalizeScores(sorted, 20, 100);
+}
+
+function normalizeScores(results, min = 0, max = 100) {
+    const rawScores = results.map(r => r[1]);
+
+    const minRaw = Math.min(...rawScores);
+    const maxRaw = Math.max(...rawScores);
+
+    // Avoid divide-by-zero
+    if (minRaw === maxRaw) {
+        return results.map(([name]) => [name, 50]);
+    }
+
+    return results.map(([name, score]) => [
+        name,
+        Math.round(
+            min + ((score - minRaw) / (maxRaw - minRaw)) * (max - min)
+        )
+    ]);
 }
 
 /* ======================= UPLOAD ======================= */
 app.post("/upload", isLoggedIn, upload.array("resume"), async (req, res) => {
     try {
+        if (!req.files || req.files.length === 0) {
+            throw new Error("No files uploaded");
+        }
+
         console.log("📥 Upload received:", req.files.length, "files");
 
-        const results = await computeScores(req.files.map(f => f.path));
+        const extractedReports = [];
 
+        // 1️⃣ Extract text + save report for each resume
+        for (const file of req.files) {
+            const originalName = path.parse(file.originalname).name;
+
+            const { reportPath, charCount } = await extractText(
+                file.path,
+                originalName
+            );
+
+            extractedReports.push({
+                filename: file.filename,
+                filepath: file.path,
+                reportPath,
+                charCount
+            });
+        }
+
+        // 2️⃣ Compute scores (use original PDF paths or report paths)
+        const results = await computeScores(
+            extractedReports.map(r => r.filepath)
+        );
+
+        // 3️⃣ Clear old results
         await Resume.deleteMany({ userId: req.session.user.id });
 
+        // 4️⃣ Save new results
         for (const [filename, score] of results) {
+            const report = extractedReports.find(r =>
+                r.filename.includes(filename)
+            );
+
             await new Resume({
                 userId: req.session.user.id,
                 filename,
-                filepath: `uploads/${filename}`,
+                filepath: `upload/${filename}`,
+                reportPath: report?.reportPath,
                 score
             }).save();
         }
 
         res.redirect("/result");
+
     } catch (err) {
-        console.error("❌ ERROR:", err.message);
+        console.error("❌ ERROR:", err);
         res.status(400).json({ error: err.message });
     }
 });
+
 
 /* ======================= RESULTS ======================= */
 app.get("/results", isLoggedIn, async (req, res) => {
