@@ -586,7 +586,7 @@ body {
 /* Button */
 .upload-btn {
   position: relative;
-  top: 17%;
+  top: 10%;
   width: 100%;
   padding: 12px;
   border: none;
@@ -599,7 +599,7 @@ body {
 
 .submit-btn {
   position: relative;
-  top: 20%;
+  top: 5%;
   width: 100%;
   padding: 12px;
   border: none;

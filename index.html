@@ -179,41 +179,47 @@
 
             <!-- UPLOAD -->
             <section class="upload-section">
-
                 <div class="upload-box" id="uploadBox">
 
-                    <!-- LEFT: IMAGE -->
+                    <!-- LEFT: IMAGE / DRAG & DROP -->
                     <div class="upload-left">
                         <img src="https://cdn-icons-png.flaticon.com/512/724/724933.png" alt="Upload"
                             class="upload-illustration">
-                        <p>Drag & Drop your files<br>or <span class="browse">Browse</span></p>
-                        <input type="file" id="fileInput" hidden multiple>
+                        <p>Drag & Drop your files<br>or <span class="browse" id="browseBtn">Browse</span></p>
+                        <input type="file" id="fileInput" multiple hidden>
                     </div>
 
-                    <!-- RIGHT: FILE LIST -->
-                    <div class="upload-right">
-                        <h2>Upload Your Resume</h2>
-                        <div id="fileList" class="file-list"></div>
-                        <button id="uploadBtn" class="upload-btn">Upload Files</button>
-                        <button id="submitBtn" class="submit-btn" style="display:none;" name="resume">Upload</button>
+                    <!-- RIGHT: FORM / WEIGHTS -->
+                    <form id="uploadForm" enctype="multipart/form-data">
+                        <input type="file" name="resume" multiple hidden /> <!-- keep hidden to sync with JS -->
 
-                    </div>
+                        <label>Partial: <input type="number" step="0.01" name="partial" value="0.2" /></label>
+                        <label>Relative: <input type="number" step="0.01" name="relative" value="0.25" /></label>
+                        <label>Penalty: <input type="number" step="0.01" name="penalty" value="0.15" /></label>
+                        <label>Consistency: <input type="number" step="0.01" name="consistency" value="0.2" /></label>
+                        <label>Duplicate: <input type="number" step="0.01" name="duplicate" value="0.2" /></label>
+
+                        <div id="fileList" class="file-list">
+                            <p>No files selected</p>
+                        </div>
+
+                        <button type="submit" id="uploadBtn">Upload Resumes</button>
+                    </form>
 
                 </div>
 
-                <!-- SUCCESS UI -->
-                <div class="upload-success" id="successBox">
+                <!-- SUCCESS UI (hidden by default) -->
+                <div class="upload-success" id="successBox" style="display:none;">
                     <img src="https://cdn-icons-png.flaticon.com/512/845/845646.png" class="success-img" alt="Success">
                     <h2>Upload Successful 🎉</h2>
                     <p>Your files have been uploaded and processed.</p><br>
                     <button onclick="location.reload()">Upload More</button><br>
-                    <a href="http://localhost:4000/result.html">
+                    <a href="/result.html">
                         <button type="button" style="padding: 10px 20px;font-size: 16px;cursor: pointer;">
                             Show Results
                         </button>
                     </a>
                 </div>
-
             </section>
             <!-- CONTACT -->
             <header class="contact">

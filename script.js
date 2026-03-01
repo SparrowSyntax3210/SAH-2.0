@@ -179,7 +179,6 @@ if (avatar) {
   });
 }
 
-/* ================= LOGIN STATE ================= */
 /* ================= AUTH UI HANDLER ================= */
 document.addEventListener("DOMContentLoaded", () => {
   const profile = document.getElementById("profileCircle");
@@ -212,106 +211,65 @@ function logoutUser() {
 }
 
 /* ================= UPLOAD LOGIC ================= */
-const uploadBtn = document.getElementById("uploadBtn");
-const submitBtn = document.getElementById("submitBtn");
+// ================= UPLOAD LOGIC =================
 const fileInput = document.getElementById("fileInput");
 const fileList = document.getElementById("fileList");
-const browseText = document.querySelector(".browse");
+const browseBtn = document.getElementById("browseBtn");
 const uploadBox = document.getElementById("uploadBox");
 const successBox = document.getElementById("successBox");
+const uploadForm = document.getElementById("uploadForm");
 
-if (uploadBtn && submitBtn && fileInput) {
+let selectedFiles = [];
 
-  let selectedFiles = [];
+// Browse click triggers file input
+browseBtn.addEventListener("click", () => fileInput.click());
 
-  submitBtn.style.display = "none";
+// File selection
+fileInput.addEventListener("change", (e) => {
+  selectedFiles = Array.from(e.target.files);
+  renderFileList();
+});
 
-  uploadBtn.addEventListener("click", () => fileInput.click());
-  if (browseText) browseText.addEventListener("click", () => fileInput.click());
-
-  fileInput.addEventListener("change", () => {
-    const files = Array.from(fileInput.files);
-    if (!files.length) return;
-
-    files.forEach(file => {
-      selectedFiles.push(file);
-
-      const item = document.createElement("div");
-      item.className = "file-item";
-      item.textContent = file.name;
-      fileList.appendChild(item);
-    });
-
-    uploadBtn.textContent = "Upload More";
-    submitBtn.style.display = "inline-block";
-  });
-
-  /* 🚀 SEND FILES TO BACKEND */
-  submitBtn.addEventListener("click", async () => {
-    if (!selectedFiles.length) return alert("Select files first");
-
-    const formData = new FormData();
-    selectedFiles.forEach(file => formData.append("resume", file));
-
-    try {
-      const res = await fetch("/upload", {
-        method: "POST",
-        body: formData
-      });
-
-      const text = await res.text();
-
-      if (uploadBox) uploadBox.style.display = "none";
-      if (successBox) successBox.style.display = "block";
-
-      console.log("Server response:", text);
-
-    } catch (err) {
-      console.error("Upload error:", err);
-      alert("Upload failed");
-    }
-  });
-
-  const formData = new FormData();
-  formData.append("resume", fileInput.files[0]);
-
-  fetch("/upload", {
-    method: "POST",
-    body: formData
-  })
-    .then(res => res.json())
-    .then(data => alert(data.message))
-    .catch(err => console.error(err));
-
-  uploadBtn.addEventListener("click", async () => {
-    if (fileInput.files.length === 0) {
-      alert("Please select files first");
-      return;
-    }
-
-    const formData = new FormData();
-
-    for (let file of fileInput.files) {
-      formData.append("resume", file);
-    }
-
-    try {
-      const res = await fetch("/upload", {
-        method: "POST",
-        body: formData
-      });
-
-      const data = await res.json();
-      console.log("SERVER RESPONSE:", data);
-      alert("Upload successful!");
-    } catch (err) {
-      console.error(err);
-      alert("Upload failed");
-    }
-  });
-
+function renderFileList() {
+  if (!selectedFiles.length) {
+    fileList.innerHTML = "<p>No files selected</p>";
+    return;
+  }
+  fileList.innerHTML = selectedFiles.map(f => `<p>${f.name}</p>`).join("");
 }
 
+// Drag & Drop
+uploadBox.addEventListener("dragover", e => e.preventDefault());
+uploadBox.addEventListener("drop", e => {
+  e.preventDefault();
+  selectedFiles = Array.from(e.dataTransfer.files);
+  fileInput.files = e.dataTransfer.files; // sync hidden input
+  renderFileList();
+});
+
+// Upload form submit
+uploadForm.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!selectedFiles.length) return alert("Please select files first");
+
+  const formData = new FormData(uploadForm);
+  selectedFiles.forEach(f => formData.append("resume", f));
+
+  try {
+    const res = await fetch("/upload", { method: "POST", body: formData });
+    if (res.ok) {
+      // hide upload form & show success
+      uploadBox.style.display = "none";
+      successBox.style.display = "block";
+    } else {
+      const text = await res.text();
+      alert("Upload failed: " + text);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Upload failed: " + err.message);
+  }
+});
 /* ===== DESKTOP ONLY ===== */
 mm.add("(min-width: 1025px)", () => {
   const container = document.querySelector(".keydivs");
