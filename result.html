@@ -3,61 +3,171 @@
 
 <head>
     <meta charset="UTF-8" />
-    <title>Resume Rankings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Resume Rankings | HR Dashboard</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Inter", sans-serif;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            padding: 40px;
+            min-height: 100vh;
+            background: linear-gradient(120deg, #f5f7fa 40%, #111111 100%);
+            display: flex;
+            justify-content: center;
+            padding: 60px 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1150px;
+            background: #111;
+            border-radius: 20px;
+            padding: 50px;
+            border-left: 6px solid #ffffff;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         h1 {
-            margin-bottom: 20px;
+            color: #fff;
+            font-size: 30px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #bbb;
+            font-size: 14px;
+            margin-bottom: 40px;
         }
 
         table {
+            width: 100%;
             border-collapse: collapse;
-            width: 90%;
+            border-radius: 12px;
+            overflow: hidden;
         }
 
-        th,
-        td {
-            padding: 12px;
-            border: 1px solid #000;
-            text-align: center;
+        thead {
+            background: rgba(255, 255, 255, 0.08);
         }
 
         th {
-            background-color: #f0f0f0;
+            padding: 18px;
+            color: #fff;
+            text-align: center;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.5px;
         }
 
-        a {
+        td {
+            padding: 20px;
+            text-align: center;
+            color: #eaeaea;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(6px);
+        }
+
+        /* Rank Medal */
+        .rank {
+            font-weight: 700;
+            font-size: 16px;
+        }
+
+        /* Score Progress Bar */
+        .score-wrapper {
+            width: 120px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            height: 10px;
+            margin: auto;
+            overflow: hidden;
+        }
+
+        .score-bar {
+            height: 100%;
+            background: #ffffff;
+            border-radius: 20px;
+            transition: width 0.6s ease;
+        }
+
+        .score-text {
+            margin-top: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .report-btn {
+            padding: 8px 18px;
+            border-radius: 25px;
+            background: #ffffff;
+            color: #111;
+            font-weight: 600;
             text-decoration: none;
-            color: #0066cc;
-            font-weight: bold;
+            transition: 0.3s ease;
+            display: inline-block;
         }
 
-        a:hover {
-            text-decoration: underline;
+        .report-btn:hover {
+            background: #eaeaea;
+            transform: scale(1.08);
+            box-shadow: 0 0 15px rgba(255,255,255,0.5);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 25px;
+            }
+
+            th, td {
+                padding: 12px;
+                font-size: 13px;
+            }
         }
     </style>
 </head>
 
 <body>
 
-    <h1>📊 Resume Rankings</h1>
+    <div class="container">
+        <h1>Resume Ranking Dashboard</h1>
+        <div class="subtitle">AI-Generated Resume Evaluation Report</div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Rank</th>
-                <th>File Name</th>
-                <th>Score</th>
-                <th>Report</th>
-            </tr>
-        </thead>
-        <tbody id="results"></tbody>
-    </table>
+        <table>
+            <thead>
+                <tr>
+                    <th>Rank</th>
+                    <th>Candidate File</th>
+                    <th>Score Analysis</th>
+                    <th>Detailed Report</th>
+                </tr>
+            </thead>
+            <tbody id="results"></tbody>
+        </table>
+    </div>
 
     <script>
         fetch("/results", { credentials: "include" })
@@ -79,15 +189,30 @@
                 }
 
                 data.resumes.forEach((r, i) => {
+
+                    let medal = `#${i+1}`;
+                    if(i === 0) medal = "🥇";
+                    if(i === 1) medal = "🥈";
+                    if(i === 2) medal = "🥉";
+
                     const row = document.createElement("tr");
+
                     row.innerHTML = `
-                        <td>${i + 1}</td>
+                        <td class="rank">${medal}</td>
                         <td>${r.filename}</td>
-                        <td>${r.score}</td>
                         <td>
-                            <a href="/report.html?id=${r._id}">View Report</a>
+                            <div class="score-wrapper">
+                                <div class="score-bar" style="width:${r.score}%"></div>
+                            </div>
+                            <div class="score-text">${r.score}%</div>
+                        </td>
+                        <td>
+                            <a class="report-btn" href="/report.html?id=${r._id}">
+                                View
+                            </a>
                         </td>
                     `;
+
                     tbody.appendChild(row);
                 });
             })
@@ -99,5 +224,4 @@
     </script>
 
 </body>
-
 </html>

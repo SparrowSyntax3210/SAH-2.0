@@ -1,14 +1,201 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Resume Report</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Evaluation Report</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Inter", sans-serif;
+        }
+
+        /* BLACK & WHITE GRADIENT BACKGROUND */
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #ffffff 20%, #000000 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 40px;
+        }
+
+        /* MAIN CARD */
+        .report-container {
+            width: 100%;
+            max-width: 1100px;
+            background: #111;
+            padding: 60px;
+            border-radius: 22px;
+
+            /* ATTRACTIVE WHITE BORDER */
+            border: 3px solid #ffffff;
+
+            /* ADVANCED SHADOW */
+            box-shadow:
+                0 100px 200px rgba(0, 0, 0, 0.95),
+                0 40px 80px rgba(0, 0, 0, 0.8),
+                0 0 40px rgba(255, 255, 255, 0.15);
+
+            transition: all 0.4s ease;
+        }
+
+        /* BORDER HOVER EFFECT */
+        .report-container:hover {
+            transform: translateY(-8px);
+            border: 3px solid #ffffff;
+            box-shadow:
+                0 120px 240px rgba(0, 0, 0, 1),
+                0 50px 100px rgba(0, 0, 0, 0.9),
+                0 0 60px rgba(255, 255, 255, 0.35);
+        }
+
+        /* TITLE */
+        h1 {
+            color: #ffffff;
+            font-size: 34px;
+            font-weight: 800;
+            margin-bottom: 50px;
+            letter-spacing: 1px;
+        }
+
+        /* HEADER SECTION */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 50px;
+            gap: 20px;
+        }
+
+        .filename {
+            color: #ffffff;
+            font-size: 22px;
+            font-weight: 600;
+        }
+
+        .final-score {
+            background: #ffffff;
+            color: #000;
+            padding: 18px 35px;
+            border-radius: 50px;
+            font-size: 24px;
+            font-weight: 700;
+            box-shadow: 0 15px 40px rgba(255, 255, 255, 0.4);
+        }
+
+        /* METRICS */
+        .metric {
+            margin-bottom: 35px;
+        }
+
+        .metric-title {
+            color: #bbbbbb;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 14px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 25px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: #ffffff;
+            border-radius: 25px;
+            transition: width 1s ease;
+        }
+
+        .metric-value {
+            margin-top: 8px;
+            font-size: 13px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 50px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        th {
+            padding: 18px;
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 18px;
+            text-align: center;
+            color: #eaeaea;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.06);
+            transform: translateX(8px);
+        }
+
+        /* BUTTON */
+        .back-btn {
+            display: inline-block;
+            margin-top: 50px;
+            padding: 12px 30px;
+            background: #ffffff;
+            color: #000;
+            border-radius: 40px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .back-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+        }
+
+        /* RESPONSIVE */
+        @media(max-width:768px) {
+            .report-container {
+                padding: 30px;
+            }
+
+            body {
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <h1>Resume Evaluation Report</h1>
 
-    <div id="content"></div>
+    <div class="report-container">
+        <h1>Resume Evaluation Report</h1>
+        <div id="content"></div>
+    </div>
 
     <script>
         const id = new URLSearchParams(window.location.search).get("id");
@@ -16,21 +203,40 @@
         fetch(`/api/report/${id}`)
             .then(res => res.json())
             .then(r => {
-                document.getElementById("content").innerHTML = `
-        <h2>${r.filename}</h2>
-        <h3>Final Score: ${r.score}</h3>
 
-        <table border="1">
-          <tr><th>Parameter</th><th>Raw</th><th>Weighted</th></tr>
-          <tr><td>Partial Credit</td><td>${r.breakdown.partial}</td><td>${r.weighted.partial.toFixed(2)}</td></tr>
-          <tr><td>Relative Similarity</td><td>${r.breakdown.relative}</td><td>${r.weighted.relative.toFixed(2)}</td></tr>
-          <tr><td>Keyword Penalty</td><td>${r.breakdown.penalty}</td><td>${r.weighted.penalty.toFixed(2)}</td></tr>
-          <tr><td>Consistency</td><td>${r.breakdown.consistency}</td><td>${r.weighted.consistency.toFixed(2)}</td></tr>
-          <tr><td>Duplicate</td><td>${r.breakdown.duplicate}</td><td>${r.weighted.duplicate.toFixed(2)}</td></tr>
-        </table>
-      `;
+                document.getElementById("content").innerHTML = `
+
+<div class="header">
+    <div class="filename">${r.filename}</div>
+    <div class="final-score">${r.score}%</div>
+</div>
+
+${metric("Partial Credit", r.breakdown.partial, r.weighted.partial)}
+${metric("Relative Similarity", r.breakdown.relative, r.weighted.relative)}
+${metric("Consistency", r.breakdown.consistency, r.weighted.consistency)}
+${metric("Keyword Penalty", Math.abs(r.breakdown.penalty), r.weighted.penalty, true)}
+${metric("Duplicate Content", r.breakdown.duplicate, r.weighted.duplicate)}
+
+<a href="/index.html" class="back-btn">Back to Dashboard</a>
+
+`;
             });
+
+        function metric(title, raw, weighted, isPenalty = false) {
+            const width = Math.min(Math.abs(raw) * 20, 100); // scale to %
+            return `
+    <div class="metric">
+        <div class="metric-title">${title}</div>
+        <div class="progress-bar">
+            <div class="progress-fill" style="width:${width}%"></div>
+        </div>
+        <div class="metric-value">
+            Raw: ${raw} | Weighted: ${weighted.toFixed(2)}
+        </div>
+    </div>`;
+        }
     </script>
+
 </body>
 
 </html>
