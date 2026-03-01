@@ -146,13 +146,29 @@ const WEIGHTS = {
 };
 
 function partialCreditScore(text) {
-    const vague = ["basic", "familiar", "learning", "exposure"];
-    const strong = ["expert", "advanced", "certified", "professional", "experienced"];
-    let score = 0;
     const t = text.toLowerCase();
-    vague.forEach(w => t.includes(w) && (score += 0.3));
+
+    const weak = [
+        "basic", "beginner", "learning", "familiar", "exposure"
+    ];
+
+    const medium = [
+        "intermediate", "hands-on", "worked on", "experience with",
+        "implemented", "developed"
+    ];
+
+    const strong = [
+        "expert", "advanced", "proficient", "professional",
+        "certified", "years of experience"
+    ];
+
+    let score = 0;
+
+    weak.forEach(w => t.includes(w) && (score += 0.2));
+    medium.forEach(w => t.includes(w) && (score += 0.6));
     strong.forEach(w => t.includes(w) && (score += 1));
-    return score;
+
+    return Math.min(score, 5); // cap
 }
 
 function keywordPenalty(text) {
@@ -163,18 +179,27 @@ function keywordPenalty(text) {
 }
 
 function skillProjectConsistency(text) {
-    const rules = [
-        ["python", "project"],
-        ["java", "application"],
-        ["machine learning", "model"],
-        ["data science", "analysis"],
-        ["web", "website"]
-    ];
     const t = text.toLowerCase();
-    return rules.reduce(
-        (s, [a, b]) => s + (t.includes(a) && t.includes(b) ? 1 : 0),
-        0
-    );
+
+    const rules = [
+        ["python", ["project", "script", "automation"]],
+        ["java", ["application", "backend", "spring"]],
+        ["machine learning", ["model", "prediction", "classification"]],
+        ["data science", ["analysis", "dataset", "visualization"]],
+        ["web", ["website", "frontend", "backend"]]
+    ];
+
+    let score = 0;
+
+    rules.forEach(([skill, contexts]) => {
+        if (t.includes(skill)) {
+            contexts.forEach(c => {
+                if (t.includes(c)) score += 1;
+            });
+        }
+    });
+
+    return score;
 }
 
 function computeTFIDF(texts) {
@@ -209,14 +234,20 @@ function cosineSimilarity(a, b) {
 }
 
 function relativeScore(tfidf) {
+    if (tfidf.documents.length === 1) {
+        return [0.5]; // neutral similarity
+    }
+
     return tfidf.documents.map((doc, i) => {
         let sum = 0, count = 0;
+
         tfidf.documents.forEach((other, j) => {
             if (i !== j) {
                 sum += cosineSimilarity(doc, other);
                 count++;
             }
         });
+
         return count ? sum / count : 0;
     });
 }
@@ -236,46 +267,58 @@ async function computeScores(filePaths) {
     const names = [];
 
     for (const filePath of filePaths) {
-        try {
-            // 🔥 ONLY extract text string
-            const result = await extractText(filePath);
-
-            if (typeof result.text !== "string") {
-                console.error("❌ Invalid extractText result:", result);
-                continue;
-            }
-
-            texts.push(result.text);
-            names.push(path.basename(filePath));
-
-        } catch (err) {
-            console.error("❌ Skipping:", err.message);
-        }
-    }
-
-    if (!texts.length) {
-        throw new Error("No readable PDFs found");
+        const { text } = await extractText(filePath);
+        texts.push(text);
+        names.push(path.basename(filePath));
     }
 
     const tfidf = computeTFIDF(texts);
     const rel = relativeScore(tfidf);
     const dup = duplicateScore(tfidf);
 
-    const results = texts.map((t, i) => [
-        names[i],
-        WEIGHTS.partial * partialCreditScore(t) +
-        WEIGHTS.relative * rel[i] +
-        WEIGHTS.penalty * keywordPenalty(t) +
-        WEIGHTS.consistency * skillProjectConsistency(t) +
-        WEIGHTS.duplicate * dup[i]
-    ]);
+    const results = texts.map((text, i) => {
+        const partial = partialCreditScore(text);
+        const relative = rel[i] || 0;
+        const penalty = keywordPenalty(text);
+        const consistency = skillProjectConsistency(text);
+        const duplicate = dup[i] || 1;
 
-    console.log("🏆 FINAL SCORES:", results);
-    const sorted = results.sort((a, b) => b[1] - a[1]);
+        const rawScore =
+            WEIGHTS.partial * partial +
+            WEIGHTS.relative * relative +
+            WEIGHTS.penalty * penalty +
+            WEIGHTS.consistency * consistency +
+            WEIGHTS.duplicate * duplicate;
 
-    return normalizeScores(sorted, 20, 100);
+        return {
+            filename: names[i],
+            breakdown: { partial, relative, penalty, consistency, duplicate },
+            weighted: {
+                partial: WEIGHTS.partial * partial,
+                relative: WEIGHTS.relative * relative,
+                penalty: WEIGHTS.penalty * penalty,
+                consistency: WEIGHTS.consistency * consistency,
+                duplicate: WEIGHTS.duplicate * duplicate
+            },
+            rawScore
+        };
+    });
+
+    // ✅ Normalize to 20–100
+    const rawScores = results.map(r => r.rawScore);
+    const minRaw = Math.min(...rawScores);
+    const maxRaw = Math.max(...rawScores);
+
+    return results.map(r => ({
+        ...r,
+        finalScore:
+            minRaw === maxRaw
+                ? 50
+                : Math.round(
+                    20 + ((r.rawScore - minRaw) / (maxRaw - minRaw)) * 80
+                )
+    }));
 }
-
 function normalizeScores(results, min = 0, max = 100) {
     const rawScores = results.map(r => r[1]);
 
@@ -296,70 +339,54 @@ function normalizeScores(results, min = 0, max = 100) {
 }
 
 /* ======================= UPLOAD ======================= */
-app.post("/upload", isLoggedIn, upload.array("resume"), async (req, res) => {
+app.post("/upload", upload.array("resume"), async (req, res) => {
     try {
         if (!req.files || req.files.length === 0) {
-            throw new Error("No files uploaded");
+            return res.status(400).send("No files uploaded");
         }
 
         console.log("📥 Upload received:", req.files.length, "files");
 
-        const extractedReports = [];
-
-        // 1️⃣ Extract text + save report for each resume
-        for (const file of req.files) {
-            const originalName = path.parse(file.originalname).name;
-
-            const { reportPath, charCount } = await extractText(
-                file.path,
-                originalName
-            );
-
-            extractedReports.push({
-                filename: file.filename,
-                filepath: file.path,
-                reportPath,
-                charCount
-            });
-        }
-
-        // 2️⃣ Compute scores (use original PDF paths or report paths)
+        // 1️⃣ Compute scores
         const results = await computeScores(
-            extractedReports.map(r => r.filepath)
+            req.files.map(f => f.path)
         );
 
-        // 3️⃣ Clear old results
-        await Resume.deleteMany({ userId: req.session.user.id });
+        // 2️⃣ Clear old results (NO userId for now)
+        await Resume.deleteMany({});
 
-        // 4️⃣ Save new results
-        for (const [filename, score] of results) {
-            const report = extractedReports.find(r =>
-                r.filename.includes(filename)
-            );
-
+        // 3️⃣ Save ALL resumes
+        for (const result of results) {
             await new Resume({
-                userId: req.session.user.id,
-                filename,
-                filepath: `upload/${filename}`,
-                reportPath: report?.reportPath,
-                score
+                filename: result.filename,
+                score: result.finalScore,
+                breakdown: result.breakdown,
+                weighted: result.weighted
             }).save();
         }
 
-        res.redirect("/result");
+        // ✅ RESPOND ONLY ONCE
+        return res.redirect("/result");
 
     } catch (err) {
         console.error("❌ ERROR:", err);
-        res.status(400).json({ error: err.message });
+        return res.status(500).send("Upload failed");
     }
 });
-
-
 /* ======================= RESULTS ======================= */
 app.get("/results", isLoggedIn, async (req, res) => {
-    const resumes = await Resume.find({ userId: req.session.user.id })
-        .sort({ score: -1 });
+    const resumes = await Resume.find().sort({ score: -1 });
     res.json({ resumes });
+});
+
+app.get("/api/report/:id", isLoggedIn, async (req, res) => {
+    const resume = await Resume.findById(req.params.id).lean();
+
+    if (!resume) {
+        return res.status(404).json({ error: "Report not found" });
+    }
+
+    res.json(resume);
 });
 
 /* ======================= LOGOUT ======================= */

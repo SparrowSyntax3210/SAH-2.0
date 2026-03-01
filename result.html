@@ -1,29 +1,51 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
+    <meta charset="UTF-8" />
     <title>Resume Rankings</title>
+
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 40px;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
         table {
             border-collapse: collapse;
-            width: 80%;
+            width: 90%;
         }
 
         th,
         td {
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #000;
             text-align: center;
         }
 
         th {
-            background: #f0f0f0;
+            background-color: #f0f0f0;
+        }
+
+        a {
+            text-decoration: none;
+            color: #0066cc;
+            font-weight: bold;
+        }
+
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 
 <body>
-    <h1>Resume Rankings</h1>
+
+    <h1>📊 Resume Rankings</h1>
 
     <table>
         <thead>
@@ -31,30 +53,41 @@
                 <th>Rank</th>
                 <th>File Name</th>
                 <th>Score</th>
+                <th>Report</th>
             </tr>
         </thead>
         <tbody id="results"></tbody>
     </table>
 
     <script>
-        fetch("/results")
+        fetch("/results", { credentials: "include" })
             .then(res => {
-                if (!res.ok) {
-                    throw new Error("Not logged in");
-                }
+                if (!res.ok) throw new Error("Unauthorized");
                 return res.json();
             })
             .then(data => {
                 const tbody = document.getElementById("results");
                 tbody.innerHTML = "";
 
+                if (!data.resumes || data.resumes.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4">No resumes found</td>
+                        </tr>
+                    `;
+                    return;
+                }
+
                 data.resumes.forEach((r, i) => {
                     const row = document.createElement("tr");
                     row.innerHTML = `
-              <td>${i + 1}</td>
-              <td>${r.filename}</td>
-              <td>${r.score.toFixed(2)}</td>
-          `;
+                        <td>${i + 1}</td>
+                        <td>${r.filename}</td>
+                        <td>${r.score}</td>
+                        <td>
+                            <a href="/report.html?id=${r._id}">View Report</a>
+                        </td>
+                    `;
                     tbody.appendChild(row);
                 });
             })
@@ -64,6 +97,7 @@
                 window.location.href = "/login";
             });
     </script>
+
 </body>
 
 </html>

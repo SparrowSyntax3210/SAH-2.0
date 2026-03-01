@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Resume Report</title>
+</head>
+
+<body>
+    <h1>Resume Evaluation Report</h1>
+
+    <div id="content"></div>
+
+    <script>
+        const id = new URLSearchParams(window.location.search).get("id");
+
+        fetch(`/api/report/${id}`)
+            .then(res => res.json())
+            .then(r => {
+                document.getElementById("content").innerHTML = `
+        <h2>${r.filename}</h2>
+        <h3>Final Score: ${r.score}</h3>
+
+        <table border="1">
+          <tr><th>Parameter</th><th>Raw</th><th>Weighted</th></tr>
+          <tr><td>Partial Credit</td><td>${r.breakdown.partial}</td><td>${r.weighted.partial.toFixed(2)}</td></tr>
+          <tr><td>Relative Similarity</td><td>${r.breakdown.relative}</td><td>${r.weighted.relative.toFixed(2)}</td></tr>
+          <tr><td>Keyword Penalty</td><td>${r.breakdown.penalty}</td><td>${r.weighted.penalty.toFixed(2)}</td></tr>
+          <tr><td>Consistency</td><td>${r.breakdown.consistency}</td><td>${r.weighted.consistency.toFixed(2)}</td></tr>
+          <tr><td>Duplicate</td><td>${r.breakdown.duplicate}</td><td>${r.weighted.duplicate.toFixed(2)}</td></tr>
+        </table>
+      `;
+            });
+    </script>
+</body>
+
+</html>

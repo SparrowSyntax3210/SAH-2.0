@@ -1,12 +1,29 @@
 const mongoose = require("mongoose");
 
-const resumeSchema = new mongoose.Schema({
-    userId: String,
+const ResumeSchema = new mongoose.Schema({
     filename: String,
-    filepath: String,
-    extractedText: String,   // ✅ NEW FIELD
     score: Number,
-    uploadedAt: { type: Date, default: Date.now }
+
+    breakdown: {
+        partial: Number,
+        relative: Number,
+        penalty: Number,
+        consistency: Number,
+        duplicate: Number
+    },
+
+    weighted: {
+        partial: Number,
+        relative: Number,
+        penalty: Number,
+        consistency: Number,
+        duplicate: Number
+    },
+
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
-module.exports = mongoose.model("Resume", resumeSchema);
+module.exports = mongoose.model("Resume", ResumeSchema);
