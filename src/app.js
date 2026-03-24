@@ -60,26 +60,192 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /* ======================= PDF TEXT EXTRACTION ======================= */
-async function extractText(filePath, originalFileName) {
+async function extractText(filePath) {
+  try {
     const data = new Uint8Array(fs.readFileSync(filePath));
     const pdf = await pdfjsLib.getDocument({ data }).promise;
+
     let text = "";
 
     for (let i = 1; i <= pdf.numPages; i++) {
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        text += content.items.map(item => item.str).join(" ") + " ";
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+
+      text += content.items.map((item) => item.str).join(" ") + "\n";
     }
 
-    text = text.trim();
-    if (!text) throw new Error("Unreadable or scanned PDF (no text)");
+    if (!text.trim()) throw new Error("Unreadable PDF");
 
-    const safeName = (originalFileName || "resume").replace(/[^a-z0-9]/gi, "_");
-    const reportPath = path.join(reportDir, `${Date.now()}_${safeName}.txt`);
-    fs.writeFileSync(reportPath, text, "utf8");
-
-    return { text, reportPath, charCount: text.length };
+    return text;
+  } catch (err) {
+    console.error("PDF Extraction Error:", err);
+    return "";
+  }
 }
+
+/* ================= DATA EXTRACTION ================= */
+
+function extractEmail(text) {
+  const match = text.match(
+    /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/
+  );
+  return match ? match[0] : null;
+}
+
+function extractPhone(text) {
+  const match = text.match(/(\+91[\-\s]?)?[6-9]\d{9}/);
+  return match ? match[0] : null;
+}
+
+function extractName(text) {
+  const lines = text.split("\n");
+
+  for (let line of lines) {
+    line = line.trim();
+
+    if (
+      line.length > 3 &&
+      line.length < 40 &&
+      !line.includes("@") &&
+      !line.match(/\d/)
+    ) {
+      return line;
+    }
+  }
+
+  return "Unknown";
+}
+
+function extractSkills(text) {
+  const skills = [
+    "javascript",
+    "react",
+    "node",
+    "express",
+    "mongodb",
+    "mysql",
+    "html",
+    "css",
+    "git",
+    "github",
+    "python",
+    "java",
+    "c++",
+  ];
+
+  const lower = text.toLowerCase();
+
+  return skills.filter((skill) => lower.includes(skill));
+}
+
+function extractEducation(text) {
+  const keywords = [
+    "btech",
+    "b.tech",
+    "bachelor",
+    "master",
+    "degree",
+    "college",
+    "university",
+  ];
+
+  return text
+    .split("\n")
+    .filter((line) =>
+      keywords.some((k) => line.toLowerCase().includes(k))
+    );
+}
+
+function extractExperience(text) {
+  const keywords = [
+    "intern",
+    "developer",
+    "engineer",
+    "project",
+    "experience",
+  ];
+
+  return text
+    .split("\n")
+    .filter((line) =>
+      keywords.some((k) => line.toLowerCase().includes(k))
+    );
+}
+
+/* ================= SCORING ================= */
+
+function partialCreditScore(text) {
+  const t = text.toLowerCase();
+
+  const strong = ["expert", "advanced", "proficient"];
+  const medium = ["experience", "worked", "developed"];
+  const weak = ["basic", "learning", "familiar"];
+
+  let score = 0;
+
+  weak.forEach((w) => {
+    if (t.includes(w)) score += 0.2;
+  });
+
+  medium.forEach((w) => {
+    if (t.includes(w)) score += 0.6;
+  });
+
+  strong.forEach((w) => {
+    if (t.includes(w)) score += 1;
+  });
+
+  return Math.min(score, 5);
+}
+
+/* ================= UPLOAD ROUTE ================= */
+
+app.post("/upload", upload.array("resume"), async (req, res) => {
+  try {
+    if (!req.files || req.files.length === 0) {
+      return res.status(400).send("No files uploaded");
+    }
+
+    await Resume.deleteMany({});
+
+    for (const file of req.files) {
+      const text = await extractText(file.path);
+
+      const parsedData = {
+        name: extractName(text),
+        email: extractEmail(text),
+        phone: extractPhone(text),
+        skills: extractSkills(text),
+        education: extractEducation(text),
+        experience: extractExperience(text),
+      };
+
+      const score = partialCreditScore(text);
+
+      const safeName = file.originalname.replace(/[^a-z0-9]/gi, "_");
+
+      const reportPath = path.join(
+        reportDir,
+        Date.now() + "_" + safeName + "_extracted.json"
+      );
+
+      fs.writeFileSync(reportPath, JSON.stringify(parsedData, null, 2));
+
+      await Resume.create({
+        filename: file.originalname,
+        score: Math.round(score * 20),
+        ...parsedData,
+        reportPath,
+      });
+    }
+
+    res.redirect("/result");
+  } catch (err) {
+    console.error("Upload Error:", err);
+    res.status(500).send("Upload failed");
+  }
+});
+
 
 /* ======================= SCORING ======================= */
 const DEFAULT_WEIGHTS = { partial: 0.2, relative: 0.25, penalty: 0.15, consistency: 0.2, duplicate: 0.2 };

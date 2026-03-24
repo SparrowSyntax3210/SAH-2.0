@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
       duration: 0.9,
       stagger: 0.12,
       ease: "power3.out",
-    });
+    }); 
 
 });
 
@@ -91,7 +91,7 @@ function initAnimations() {
       ease: "none",
       scrollTrigger: {
         trigger: section,
-        start: "top top",
+        start: "bottom bottom",
         end: () => "+=" + scrollAmount,
         scrub: 1,
         pin: true,
@@ -113,13 +113,13 @@ function initAnimations() {
 
     gsap.from(".key-box", {
       opacity: 0,
-      y: 40,
-      duration: 0.8,
-      stagger: 0.2,
+      y: 60,
+      duration: 1,
+      stagger: 0.4,
       ease: "power2.out",
       scrollTrigger: {
         trigger: ".page2",
-        start: "top 60%",
+        start: "top 40%",
       }
     });
   }
@@ -131,7 +131,7 @@ function initAnimations() {
     duration: 0.8,
     scrollTrigger: {
       trigger: ".upload-section",
-      start: "top 70%",
+      start: "top 40%",
     }
   });
 
@@ -210,7 +210,6 @@ function logoutUser() {
   window.location.href = "/";
 }
 
-/* ================= UPLOAD LOGIC ================= */
 // ================= UPLOAD LOGIC =================
 const fileInput = document.getElementById("fileInput");
 const fileList = document.getElementById("fileList");
