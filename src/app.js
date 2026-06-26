@@ -6,15 +6,11 @@ const {saveResumeReport}=require("./services/report");
 const upload = require("../config/multer");
 const path = require("path");
 const fs = require("fs");
+const Resume = require("../models/resume");
 
 app.use(express.json());
 app.use(express.urlencoded({extended:true}));
 app.use(express.static(path.join(__dirname , "../public")))
-console.log(path.join(__dirname, "../public/html"));
-
-console.log(
-    fs.existsSync(path.join(__dirname, "../public/html"))
-);
 
 app.get("/test", (req, res) => {
     res.send("Server Works");
