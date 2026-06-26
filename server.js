@@ -1,4 +1,4 @@
-const app = require('./src/app');
+const app = require('./src/app1');
 const connectDB = require("./db/db");
 
 app.listen(4000, () => {
