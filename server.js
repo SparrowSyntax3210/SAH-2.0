@@ -1,8 +1,8 @@
-const app = require('./src/app1');
+const app = require('./src/app');
 const connectDB = require("./db/db");
 
-app.listen(4000, () => {
-    console.log("Server is running at 4000")
+app.listen(5000, () => {
+    console.log("Server is running at 5000")
 });
 
 connectDB();
