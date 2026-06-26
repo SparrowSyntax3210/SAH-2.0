@@ -22,8 +22,6 @@ async function saveResumeReport(filePath, rawText, parsedData) {
 
         createdAt: new Date().toISOString(),
 
-        rawText,
-
         parsedData
 
     };
