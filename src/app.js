@@ -2,14 +2,13 @@ const express = require("express");
 const app = express();
 const {extractText}=require("./services/pdfextracter");
 const {parseResume}=require("./services/resumeparser");
-const saveResumeReport = require("./services/report");
+const saveResumeReport=require("./services/report");
 const upload = require("../config/multer");
 const path = require("path");
 const fs = require("fs");
 const Resume = require("../models/resume");
 const scoreCandidateReports = require("./services/scoring");
 const generateRanking = require("./services/ranking");
-const processPipeline = require("./services/pipeline");
 
 
 app.use(express.json());
@@ -24,30 +23,65 @@ app.get("/test", (req, res) => {
 app.post("/upload", upload.array("resume"), async (req, res) => {
     try {
 
-        const reportDir = path.join(process.cwd(), "reports", "candidate");
-        fs.rmSync(reportDir, { recursive: true, force: true });
-        fs.mkdirSync(reportDir, { recursive: true });
-
-        const files = req.files;
-
-        for (const file of files) {
-
-            const text = await extractText(file.path);
-            const parsed = await parseResume(text);
-
-            saveResumeReport(file.path, text, parsed, "candidate");
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "No resumes uploaded."
+            });
         }
 
-        res.json({
-            success: true,
-            message: "Uploaded successfully"
-        });
+        await Resume.deleteMany({});
 
-        processPipeline();
+        const results = [];
+
+        for (const file of req.files) {
+
+            // Extract PDF text
+            const text = await extractText(file.path);
+
+            // Parse using OpenRouter
+            const parsedResume = await parseResume(text);
+
+            // Save report
+            const reportPath = await saveResumeReport(
+                file.path,
+                text,
+                parsedResume,
+                "candidate"
+            );
+
+            // Save MongoDB
+            const resume = await Resume.create({
+                filename: file.originalname,
+                reportPath,
+                ...parsedResume
+            });
+
+            results.push(resume);
+        }
+                const scores = await scoreCandidateReports();
+
+                const ranking = await generateRanking();
+
+                res.json({
+                    success: true,
+                    uploaded: results.length,
+                    resumes: results,
+                    ranking
+                });
 
     } catch (err) {
-        console.log(err);
-        res.status(500).json({ success: false });
+
+        console.error(err);
+
+        res.status(500).json({
+
+            success: false,
+
+            message: err.message
+
+        });
+
     }
 });
 

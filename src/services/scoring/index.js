@@ -8,23 +8,20 @@ const scoreEducation = require("./scoreEducation");
 const scoreCertifications = require("./scoreCertifications");
 const scoreLinks = require("./scoreLinks");
 const scoreCompleteness = require("./scoreCompleteness");
+const saveScore = require("./saveScore");
 
-const { saveScore } = require("./saveScore");
-const { REPORT_DIR } = require("../../config/path");
+async function scoreCandidateReports() {
+    const reportFolder = path.join(process.cwd(), "reports", "candidate");
 
-async function scoreCandidateReports(runId) {
-
-    const files = fs.readdirSync(REPORT_DIR)
-        .filter(f => f.endsWith(".json"));
-
-    console.log("FILES FOUND FOR SCORING:", files.length);
+    const files = fs
+        .readdirSync(reportFolder)
+        .filter(file => file.endsWith(".json"));
 
     const results = [];
 
     for (const file of files) {
-
         const report = JSON.parse(
-            fs.readFileSync(path.join(REPORT_DIR, file), "utf8")
+            fs.readFileSync(path.join(reportFolder, file), "utf8")
         );
 
         const parsed = report.parsedData;
@@ -48,14 +45,19 @@ async function scoreCandidateReports(runId) {
             scores.links.score +
             scores.completeness.score;
 
-        const finalReport = {
-            filename: report.metadata.filename,
-            totalScore: total,
-            breakdown: scores
-        };
+            const finalReport = {
+                filename: path.basename(report.metadata.filename),
+                totalScore: total,
+                breakdown: scores
+            };
 
-        // ✅ SAFE
-        saveScore(finalReport, runId);
+        const rawName = report.metadata?.filename || "unknown.pdf";
+
+        const runId =
+        report.metadata?.runId ||
+        "default";
+
+        await saveScore(finalReport, runId);
 
         results.push(finalReport);
     }

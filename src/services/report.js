@@ -1,12 +1,23 @@
 const fs = require("fs");
 const path = require("path");
 
+let cleared = false;
+
 function saveResumeReport(filePath, text, parsedData, type = "candidate") {
 
     const dir = path.join(process.cwd(), "reports", type);
 
-    if (!fs.existsSync(dir)) {
+    // Clear only once
+    if (!cleared) {
+        if (fs.existsSync(dir)) {
+            fs.rmSync(dir, {
+                recursive: true,
+                force: true
+            });
+        }
+
         fs.mkdirSync(dir, { recursive: true });
+        cleared = true;
     }
 
     const filename =
@@ -14,11 +25,20 @@ function saveResumeReport(filePath, text, parsedData, type = "candidate") {
 
     const fullPath = path.join(dir, filename);
 
-    fs.writeFileSync(fullPath, JSON.stringify({
-        metadata: { filename: filePath },
-        text,
-        parsedData
-    }, null, 2));
+    fs.writeFileSync(
+        fullPath,
+        JSON.stringify(
+            {
+                metadata: {
+                    filename: filePath
+                },
+                text,
+                parsedData
+            },
+            null,
+            2
+        )
+    );
 
     return fullPath;
 }

@@ -1,22 +1,78 @@
 const fs = require("fs");
 const path = require("path");
-const { SCORE_DIR } = require("../config/path");
 
-function generateRanking(runId) {
-    const runFolder = path.join(SCORE_DIR, `${runId}-upload`);
+const SCORE_FOLDER = path.join(process.cwd(), "score");
+const OUTPUT_FILE = path.join(SCORE_FOLDER, "finalRanking.json");
 
-    const files = fs.readdirSync(runFolder);
+// ✅ recursive file collector (FIXED)
+function getScoreFiles(dir = SCORE_FOLDER) {
+    let results = [];
 
-    const scores = files.map(file => {
-        const data = fs.readFileSync(path.join(runFolder, file));
-        return JSON.parse(data);
-    });
+    if (!fs.existsSync(dir)) return results;
 
-    // sort example
-    scores.sort((a, b) => (b.score || 0) - (a.score || 0));
+    const items = fs.readdirSync(dir);
 
-    console.log("🏆 Ranking generated");
-    return scores;
+    for (const item of items) {
+        const fullPath = path.join(dir, item);
+        const stat = fs.statSync(fullPath);
+
+        if (stat.isDirectory()) {
+            results = results.concat(getScoreFiles(fullPath));
+        } else if (item.endsWith(".json")) {
+            results.push(fullPath);
+        }
+    }
+
+    return results;
+}
+
+// safe JSON loader
+function loadJSON(filePath) {
+    try {
+        return JSON.parse(fs.readFileSync(filePath, "utf-8"));
+    } catch (err) {
+        return null;
+    }
+}
+
+// MAIN
+async function generateRanking() {
+    const files = getScoreFiles();
+
+    const candidates = [];
+
+    for (const file of files) {
+        const data = loadJSON(file);
+
+        if (!data) {
+            console.log("SKIP (invalid json):", file);
+            continue;
+        }
+        
+        if (typeof data.totalScore !== "number") {
+            console.log("SKIP (missing score):", file, data);
+            continue;
+        } {
+            candidates.push({
+                filename: data.filename,
+                totalScore: data.totalScore,
+                breakdown: data.breakdown
+            });
+        }
+    }
+
+    // sort descending
+    candidates.sort((a, b) => b.totalScore - a.totalScore);
+
+    // add rank
+    const ranked = candidates.map((c, index) => ({
+        rank: index + 1,
+        ...c
+    }));
+
+    fs.writeFileSync(OUTPUT_FILE, JSON.stringify(ranked, null, 2));
+
+    return ranked;
 }
 
 module.exports = generateRanking;

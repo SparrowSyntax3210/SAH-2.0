@@ -1,0 +1,42 @@
+[
+  {
+    "rank": 1,
+    "filename": "1782580060092-Harsh Goel.pdf",
+    "totalScore": 46,
+    "breakdown": {
+      "skills": {
+        "score": 16,
+        "maxScore": 20,
+        "found": 9
+      },
+      "experience": {
+        "score": 0,
+        "maxScore": 20,
+        "found": 0
+      },
+      "projects": {
+        "score": 10,
+        "maxScore": 15,
+        "found": 2
+      },
+      "education": {
+        "score": 10,
+        "maxScore": 10,
+        "found": 1
+      },
+      "certifications": {
+        "score": 0,
+        "maxScore": 10,
+        "found": 0
+      },
+      "links": {
+        "score": 0,
+        "maxScore": 5
+      },
+      "completeness": {
+        "score": 10,
+        "maxScore": 10
+      }
+    }
+  }
+]
