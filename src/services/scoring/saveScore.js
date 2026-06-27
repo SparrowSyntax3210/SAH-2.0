@@ -1,21 +1,24 @@
 const fs = require("fs");
 const path = require("path");
+const { SCORE_DIR } = require("../../config/path");
 
-module.exports = function(result) {
+function saveScore(result, runId) {
+    const runFolder = path.join(SCORE_DIR, `${runId}-upload`);
 
-    const scoreFolder = path.join(process.cwd(), "score");
+    fs.mkdirSync(runFolder, { recursive: true });
 
-    if (!fs.existsSync(scoreFolder)) {
-        fs.mkdirSync(scoreFolder, { recursive: true });
-    }
-
-    // SAFE UNIQUE NAME (VERY IMPORTANT)
-    const safeName = result.filename
+    const safeName = (result.filename || "unknown")
         .replace(/\s+/g, "_")
-        .replace(".pdf", "")
-        .replace(".json", "");
+        .replace(/[()]/g, "")
+        .replace(/\.pdf|\.json/g, "");
 
-    const filePath = path.join(scoreFolder, `${safeName}.json`);
+    // 🚨 ONLY ONE LEVEL — NO upload folder anywhere
+    const filePath = path.join(runFolder, `${safeName}.json`);
 
-    fs.writeFileSync(filePath, JSON.stringify(result, null, 2), "utf8");
-};
+    console.log("WRITING FILE:", filePath);
+
+    fs.writeFileSync(filePath, JSON.stringify(result, null, 2));
+}
+
+
+module.exports = { saveScore };

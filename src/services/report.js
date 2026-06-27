@@ -1,68 +1,26 @@
 const fs = require("fs");
 const path = require("path");
 
-async function saveResumeReport(filePath, rawText, parsedData, type = "candidate") {
+function saveResumeReport(filePath, text, parsedData, type = "candidate") {
 
-    // reports folder
-    const reportDir = path.join(
-        process.cwd(),
-        "reports",
-        type
-    );
-    
-    if (!fs.existsSync(reportDir)) {
-        fs.mkdirSync(reportDir, { recursive: true });
+    const dir = path.join(process.cwd(), "reports", type);
+
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
     }
-    
-    const reportFile = path.join(
-        reportDir,
-        `${path.parse(filePath).name}.json`
-    );
 
-    // Report structure
-    const report = {
+    const filename =
+        Date.now() + "-" + Math.random().toString(36).slice(2) + ".json";
 
-        metadata: {
-            filename: path.basename(filePath),
-            type,
-            generatedAt: new Date().toISOString()
-        },
+    const fullPath = path.join(dir, filename);
 
-        rawText,
+    fs.writeFileSync(fullPath, JSON.stringify({
+        metadata: { filename: filePath },
+        text,
+        parsedData
+    }, null, 2));
 
-        parsedData,
-
-        analysis: {
-
-            atsScore: null,
-
-            tfidfSimilarity: null,
-
-            cosineSimilarity: null,
-
-            matchedSkills: [],
-
-            missingSkills: [],
-
-            strengths: [],
-
-            weaknesses: [],
-
-            recommendations: []
-
-        }
-
-    };
-
-    fs.writeFileSync(
-        reportFile,
-        JSON.stringify(report, null, 4),
-        "utf8"
-    );
-
-    return reportFile;
+    return fullPath;
 }
 
-module.exports = {
-    saveResumeReport
-};
+module.exports = saveResumeReport;
