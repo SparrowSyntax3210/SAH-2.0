@@ -269,6 +269,30 @@ uploadForm.addEventListener("submit", async (e) => {
     alert("Upload failed: " + err.message);
   }
 });
+const form = document.getElementById("sampleForm");
+
+        form.addEventListener("submit", async (e) => {
+
+            e.preventDefault();
+
+            const data = new FormData(form);
+
+            const response = await fetch("/upload/sample", {
+
+                method: "POST",
+
+                body: data
+
+            });
+
+            const result = await response.json();
+
+            console.log(result);
+
+            alert(result.message);
+
+        });
+        
 /* ===== DESKTOP ONLY ===== */
 mm.add("(min-width: 1025px)", () => {
   const container = document.querySelector(".keydivs");

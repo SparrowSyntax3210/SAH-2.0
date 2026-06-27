@@ -33,20 +33,17 @@ app.post("/upload", upload.array("resume"), async (req, res) => {
 
       for (const file of req.files) {
 
-          // 1. Extract text
           const text = await extractText(file.path);
 
-          // 2. Parse using OpenRouter
           const parsedResume = await parseResume(text);
 
-          // 3. Save report
           const reportPath = await saveResumeReport(
-              file.path,
-              text,
-              parsedResume
-          );
+            file.path,
+            text,
+            parsedResume,
+            "candidate"
+        );
 
-          // 4. Save to MongoDB
           const resume = await Resume.create({
               filename: file.originalname,
               reportPath,
@@ -69,6 +66,46 @@ app.post("/upload", upload.array("resume"), async (req, res) => {
           message: err.message
       });
   }
+});
+
+app.post("/upload/sample", upload.single("sampleResume"), async (req, res) => {
+    try {
+
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: "No sample resume uploaded."
+            });
+        }
+
+        const text = await extractText(req.file.path);
+
+        const parsedSample = await parseResume(text);
+
+        const reportPath = await saveResumeReport(
+            req.file.path,
+            text,
+            parsedSample,
+            "sample"
+        );
+
+        res.json({
+            success: true,
+            message: "Sample Resume Parsed Successfully",
+            reportPath,
+            report: parsedSample
+        });
+
+    } catch (err) {
+
+        console.error(err);
+
+        res.status(500).json({
+            success: false,
+            message: err.message
+        });
+
+    }
 });
 
 module.exports = app;

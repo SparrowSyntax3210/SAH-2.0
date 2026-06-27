@@ -1,43 +1,66 @@
 const fs = require("fs");
 const path = require("path");
 
-async function saveResumeReport(filePath, rawText, parsedData) {
+async function saveResumeReport(filePath, rawText, parsedData, type = "candidate") {
 
-    const reportDirectory = path.join(process.cwd(), "reports");
-
-    if (!fs.existsSync(reportDirectory))
-        fs.mkdirSync(reportDirectory);
-
+    // reports folder
+    const reportDir = path.join(
+        process.cwd(),
+        "reports",
+        type
+    );
+    
+    if (!fs.existsSync(reportDir)) {
+        fs.mkdirSync(reportDir, { recursive: true });
+    }
+    
     const reportFile = path.join(
-
-        reportDirectory,
-
+        reportDir,
         `${path.parse(filePath).name}.json`
-
     );
 
+    // Report structure
     const report = {
 
-        filename: path.basename(filePath),
+        metadata: {
+            filename: path.basename(filePath),
+            type,
+            generatedAt: new Date().toISOString()
+        },
 
-        createdAt: new Date().toISOString(),
+        rawText,
 
-        parsedData
+        parsedData,
+
+        analysis: {
+
+            atsScore: null,
+
+            tfidfSimilarity: null,
+
+            cosineSimilarity: null,
+
+            matchedSkills: [],
+
+            missingSkills: [],
+
+            strengths: [],
+
+            weaknesses: [],
+
+            recommendations: []
+
+        }
 
     };
 
     fs.writeFileSync(
-
         reportFile,
-
-        JSON.stringify(report, null, 2),
-
+        JSON.stringify(report, null, 4),
         "utf8"
-
     );
 
     return reportFile;
-
 }
 
 module.exports = {
