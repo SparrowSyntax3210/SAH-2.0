@@ -21,56 +21,121 @@ app.get("/test", (req, res) => {
 
 
 app.post("/upload", upload.array("resume"), async (req, res) => {
+
     try {
 
-        if (!req.files || req.files.length === 0) {
+        if (!req.files?.length) {
+
             return res.status(400).json({
                 success: false,
                 message: "No resumes uploaded."
             });
+
         }
 
         await Resume.deleteMany({});
+
+        fs.rmSync(
+            path.join(process.cwd(), "reports", "candidate"),
+            {
+                recursive: true,
+                force: true
+            }
+        );
+
+        fs.rmSync(
+            path.join(process.cwd(), "score"),
+            {
+                recursive: true,
+                force: true
+            }
+        );
 
         const results = [];
 
         for (const file of req.files) {
 
-            // Extract PDF text
-            const text = await extractText(file.path);
+            try {
 
-            // Parse using OpenRouter
-            const parsedResume = await parseResume(text);
+                console.log(
+                    "\nProcessing:",
+                    file.originalname
+                );
 
-            // Save report
-            const reportPath = await saveResumeReport(
-                file.path,
-                text,
-                parsedResume,
-                "candidate"
-            );
+                const text =
+                    await extractText(file.path);
 
-            // Save MongoDB
-            const resume = await Resume.create({
-                filename: file.originalname,
-                reportPath,
-                ...parsedResume
+                const parsedResume =
+                    await parseResume(text);
+
+                const reportPath =
+                    saveResumeReport(
+                        file.path,
+                        text,
+                        parsedResume,
+                        "candidate"
+                    );
+
+                const resume =
+                    await Resume.create({
+
+                        filename: file.originalname,
+
+                        reportPath,
+
+                        ...parsedResume
+
+                    });
+
+                results.push(resume);
+
+                console.log(
+                    "✅ Finished:",
+                    file.originalname
+                );
+
+            }
+            catch (err) {
+
+                console.error(
+                    "❌ Failed:",
+                    file.originalname
+                );
+
+                console.error(err);
+
+            }
+
+        }
+
+        if (results.length === 0) {
+
+            return res.status(500).json({
+                success: false,
+                message: "No resume could be parsed."
             });
 
-            results.push(resume);
         }
-                const scores = await scoreCandidateReports();
 
-                const ranking = await generateRanking();
+        await scoreCandidateReports();
 
-                res.json({
-                    success: true,
-                    uploaded: results.length,
-                    resumes: results,
-                    ranking
-                });
+        const ranking =
+            await generateRanking();
 
-    } catch (err) {
+        res.json({
+
+            success: true,
+
+            uploaded: results.length,
+
+            resumes: results,
+
+            ranking
+
+        });
+
+    }
+    catch (err) {
 
         console.error(err);
 
@@ -83,7 +148,9 @@ app.post("/upload", upload.array("resume"), async (req, res) => {
         });
 
     }
+
 });
+
 
 app.post("/upload/sample", upload.single("sampleResume"), async (req, res) => {
     try {

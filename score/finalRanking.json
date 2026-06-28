@@ -1,28 +1,28 @@
 [
   {
     "rank": 1,
-    "filename": "1782580060092-Harsh Goel.pdf",
-    "totalScore": 46,
+    "filename": "1782621451445-03_Professional_CV_Resume.pdf",
+    "totalScore": 59,
     "breakdown": {
       "skills": {
         "score": 16,
         "maxScore": 20,
-        "found": 9
+        "found": 8
       },
       "experience": {
-        "score": 0,
+        "score": 20,
         "maxScore": 20,
-        "found": 0
+        "found": 2
       },
       "projects": {
-        "score": 10,
+        "score": 0,
         "maxScore": 15,
-        "found": 2
+        "found": 0
       },
       "education": {
         "score": 10,
         "maxScore": 10,
-        "found": 1
+        "found": 2
       },
       "certifications": {
         "score": 0,
@@ -30,11 +30,51 @@
         "found": 0
       },
       "links": {
-        "score": 0,
+        "score": 3,
         "maxScore": 5
       },
       "completeness": {
         "score": 10,
+        "maxScore": 10
+      }
+    }
+  },
+  {
+    "rank": 2,
+    "filename": "1782621451437-03_Professional_CV_Resume (1).pdf",
+    "totalScore": 33,
+    "breakdown": {
+      "skills": {
+        "score": 4,
+        "maxScore": 20,
+        "found": 0
+      },
+      "experience": {
+        "score": 20,
+        "maxScore": 20,
+        "found": 2
+      },
+      "projects": {
+        "score": 0,
+        "maxScore": 15,
+        "found": 0
+      },
+      "education": {
+        "score": 0,
+        "maxScore": 10,
+        "found": 0
+      },
+      "certifications": {
+        "score": 0,
+        "maxScore": 10,
+        "found": 0
+      },
+      "links": {
+        "score": 1,
+        "maxScore": 5
+      },
+      "completeness": {
+        "score": 8,
         "maxScore": 10
       }
     }

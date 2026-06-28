@@ -1,0 +1,14 @@
+{
+    "watch": [
+      "server.js",
+      "src"
+    ],
+    "ext": "js",
+    "ignore": [
+      "reports/**",
+      "score/**",
+      "upload/**",
+      "uploads/**",
+      "node_modules/**"
+    ]
+  }
