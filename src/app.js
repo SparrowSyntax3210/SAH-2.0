@@ -224,18 +224,101 @@ app.get("/score", async (req, res) => {
 
 app.get("/ranking", async (req, res) => {
     try {
-        const generateRanking = require("./services/ranking");
-        const ranking = await generateRanking();
+        const fs = require("fs");
+        const path = require("path");
 
-        res.json({
-            success: true,
-            ranking
+        const rankingPath = path.join(
+            process.cwd(),
+            "score",
+            "finalRanking.json"
+        );
+
+        if (!fs.existsSync(rankingPath)) {
+            return res.json([]);
+        }
+
+        const ranking = JSON.parse(
+            fs.readFileSync(rankingPath, "utf8")
+        );
+
+        res.json(ranking);
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json([]);
+    }
+});
+
+
+app.get("/api/report/:file", (req, res) => {
+
+    try {
+
+        const fileParam = req.params.file;
+
+        const reportDir = path.join(process.cwd(), "reports", "candidate");
+        const scoreDir = path.join(process.cwd(), "score");
+
+        const reports = fs.readdirSync(reportDir);
+
+        for (const f of reports) {
+
+            const reportPath = path.join(reportDir, f);
+            const report = JSON.parse(fs.readFileSync(reportPath, "utf8"));
+
+            const storedName = (report.metadata.filename || "")
+                .split("\\")
+                .pop();
+
+            if (storedName === fileParam) {
+
+                // 🔥 find score file
+                const scoreFolders = fs.readdirSync(scoreDir)
+                    .filter(d => d.endsWith("-upload"));
+
+                let breakdown = null;
+
+                for (const folder of scoreFolders) {
+
+                    const scoreFiles = fs.readdirSync(
+                        path.join(scoreDir, folder)
+                    );
+
+                    for (const sf of scoreFiles) {
+
+                        const scoreData = JSON.parse(
+                            fs.readFileSync(
+                                path.join(scoreDir, folder, sf),
+                                "utf8"
+                            )
+                        );
+
+                        if (scoreData.filename === storedName) {
+                            breakdown = scoreData.breakdown;
+                            break;
+                        }
+                    }
+
+                }
+
+                return res.json({
+                    filename: storedName,
+                    parsedData: report.parsedData,
+                    text: report.text,
+                    breakdown
+                });
+
+            }
+        }
+
+        return res.status(404).json({
+            message: "Report not found"
         });
 
     } catch (err) {
+        console.error(err);
         res.status(500).json({
-            success: false,
-            message: err.message
+            message: "Server error"
         });
     }
 });

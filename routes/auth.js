@@ -26,18 +26,48 @@ router.post("/register", async (req, res) => {
 
 /* ================= LOGIN ================= */
 router.post("/login", async (req, res) => {
+
     try {
+
         const { email, password } = req.body;
-        const user = await User.findOne({ email, password });
 
-        if (!user) return res.send("Invalid email or password ❌");
+        const user = await User.findOne({
+            email,
+            password
+        });
 
-        req.session.user = user;
+        if (!user) {
 
-        res.redirect("/index.html");
-    } catch (err) {
+            return res.status(401).json({
+                success: false,
+                message: "Invalid email or password"
+            });
+
+        }
+
+        req.session.user = {
+
+            id: user._id,
+
+            email: user.email
+
+        };
+
+        res.json({
+            success: true
+        });
+
+    }
+    catch (err) {
+
         console.error(err);
-        res.send("Login error");
+
+        res.status(500).json({
+
+            success: false,
+
+            message: "Server Error"
+        });
     }
 });
 // ================= AUTH STATUS =================

@@ -170,58 +170,75 @@
     </div>
 
     <script>
-        fetch("/results", { credentials: "include" })
-            .then(res => {
-                if (!res.ok) throw new Error("Unauthorized");
-                return res.json();
-            })
-            .then(data => {
+        fetch("/ranking")
+            .then(res => res.json())
+            .then(ranking => {
+        
                 const tbody = document.getElementById("results");
                 tbody.innerHTML = "";
-
-                if (!data.resumes || data.resumes.length === 0) {
+        
+                if (!ranking.length) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="4">No resumes found</td>
+                            <td colspan="4">
+                                No resumes ranked yet.
+                            </td>
                         </tr>
                     `;
                     return;
                 }
-
-                data.resumes.forEach((r, i) => {
-
-                    let medal = `#${i+1}`;
-                    if(i === 0) medal = "🥇";
-                    if(i === 1) medal = "🥈";
-                    if(i === 2) medal = "🥉";
-
+        
+                ranking.forEach(candidate => {
+        
+                    let medal = `#${candidate.rank}`;
+        
+                    if (candidate.rank === 1) medal = "🥇";
+                    else if (candidate.rank === 2) medal = "🥈";
+                    else if (candidate.rank === 3) medal = "🥉";
+        
                     const row = document.createElement("tr");
-
+        
                     row.innerHTML = `
                         <td class="rank">${medal}</td>
-                        <td>${r.filename}</td>
+        
+                        <td>${candidate.filename}</td>
+        
                         <td>
                             <div class="score-wrapper">
-                                <div class="score-bar" style="width:${r.score}%"></div>
+                                <div
+                                    class="score-bar"
+                                    style="width:${candidate.totalScore}%">
+                                </div>
                             </div>
-                            <div class="score-text">${r.score}%</div>
+        
+                            <div class="score-text">
+                                ${candidate.totalScore}/100
+                            </div>
                         </td>
+        
                         <td>
-                            <a class="report-btn" href="/report.html?id=${r._id}">
+                            <button
+                                class="report-btn"
+                                onclick="viewReport('${encodeURIComponent(candidate.filename)}')">
                                 View
-                            </a>
+                            </button>
                         </td>
                     `;
-
+        
                     tbody.appendChild(row);
+        
                 });
+        
             })
             .catch(err => {
                 console.error(err);
-                alert("Session expired. Please login again.");
-                window.location.href = "/login";
+                alert("Unable to load ranking.");
             });
-    </script>
+        
+            function viewReport(filename) {
+    window.location.href = `/report.html?file=${filename}`;
+}
+        </script>
 
 </body>
 </html>
